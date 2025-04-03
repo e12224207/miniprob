@@ -1,14 +1,12 @@
 {
-    "projectName": "MiniProc",
+    "projectName": "MiniProb",
     "languages": [{
-        "id": "mini-proc",
-        "grammar": "src/language/mini-proc.langium",
+        "id": "mini-prob",
+        "grammar": "src/language/mini-prob.langium",
         "fileExtensions": [".pomc"],
-        "textMate": {
-            "out": "syntaxes/mini-proc.tmLanguage.json"
-        },
         "monarch": {
-            "out": "src/syntaxes/mini-proc.monarch.ts"
+            "out": "src/syntaxes/mini-prob.monarch.ts",
+            "generate": false
         }
     }],
     "out": "src/language/generated"

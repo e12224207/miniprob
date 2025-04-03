@@ -1,6 +1,6 @@
 import { MonacoEditorLanguageClientWrapper, UserConfig } from 'monaco-editor-wrapper';
 import { configureWorker, defineUserServices } from './setupCommon.js';
-import monarchSyntax from "./syntaxes/mini-proc.monarch.js";
+import monarchSyntax from "./syntaxes/mini-prob.monarch.js";
 
 export const setupConfigClassic = (): UserConfig => {
     return {
@@ -8,7 +8,7 @@ export const setupConfigClassic = (): UserConfig => {
             serviceConfig: defineUserServices(),
             editorAppConfig: {
                 $type: 'classic',
-                languageId: 'mini-proc',
+                languageId: 'mini-prob',
                 code: `// Mini Proc is running in the web!`,
                 useDiffEditor: false,
                 languageExtensionConfig: { id: 'langium' },

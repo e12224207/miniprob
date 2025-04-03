@@ -34,13 +34,13 @@ function startLanguageClient(context: vscode.ExtensionContext): LanguageClient {
 
     // Options to control the language client
     const clientOptions: LanguageClientOptions = {
-        documentSelector: [{ scheme: '*', language: 'mini-proc' }]
+        documentSelector: [{ scheme: '*', language: 'mini-prob' }]
     };
 
     // Create the language client and start the client.
     const client = new LanguageClient(
-        'mini-proc',
-        'Mini Proc',
+        'mini-prob',
+        'Mini Prob',
         serverOptions,
         clientOptions
     );

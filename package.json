@@ -1,5 +1,5 @@
 {
-    "name": "mini-proc",
+    "name": "mini-prob",
     "description": "Please enter a brief description here",
     "version": "0.0.1",
     "files": [
@@ -22,7 +22,8 @@
         "dev": "vite",
         "dev:debug": "vite --debug --force",
         "serve": "npm run dev",
-        "test": "vitest run"
+        "test": "vitest run",
+        "gen-build": "npm run langium:generate && npm run build"
     },
     "dependencies": {
         "langium": "~3.4.0",
@@ -56,7 +57,7 @@
         "node": "18.19.1",
         "npm": "10.2.4"
     },
-    "displayName": "MiniProc",
+    "displayName": "MiniProb",
     "engines": {
         "vscode": "^1.67.0",
         "node": ">=18.0.0"
@@ -67,10 +68,10 @@
     "contributes": {
         "languages": [
             {
-                "id": "mini-proc",
+                "id": "mini-prob",
                 "aliases": [
-                    "Mini Proc",
-                    "mini-proc"
+                    "Mini Prob",
+                    "mini-prob"
                 ],
                 "extensions": [".pomc"],
                 "configuration": "./language-configuration.json"
@@ -78,17 +79,17 @@
         ],
         "grammars": [
             {
-                "language": "mini-proc",
-                "scopeName": "source.mini-proc",
-                "path": "syntaxes/mini-proc.tmLanguage.json"
+                "language": "mini-prob",
+                "scopeName": "source.mini-prob",
+                "path": "syntaxes/mini-prob.tmLanguage.json"
             }
         ]
     },
     "activationEvents": [
-        "onLanguage:mini-proc"
+        "onLanguage:mini-prob"
     ],
     "main": "./out/extension/main.cjs",
     "bin": {
-        "mini-proc-cli": "./bin/cli.js"
+        "mini-prob-cli": "./bin/cli.js"
     }
 }

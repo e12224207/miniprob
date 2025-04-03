@@ -4,19 +4,19 @@ import { configureWorker, defineUserServices } from './setupCommon.js';
 export const setupConfigExtended = (): UserConfig => {
     const extensionFilesOrContents = new Map();
     extensionFilesOrContents.set('/language-configuration.json', new URL('../language-configuration.json', import.meta.url));
-    extensionFilesOrContents.set('/mini-proc-grammar.json', new URL('../syntaxes/mini-proc.tmLanguage.json', import.meta.url));
+    extensionFilesOrContents.set('/mini-prob-grammar.json', new URL('../syntaxes/mini-prob.tmLanguage.json', import.meta.url));
 
     return {
         wrapperConfig: {
             serviceConfig: defineUserServices(),
             editorAppConfig: {
                 $type: 'extended',
-                languageId: 'mini-proc',
+                languageId: 'mini-prob',
                 code: `// Mini Proc is running in the web!`,
                 useDiffEditor: false,
                 extensions: [{
                     config: {
-                        name: 'mini-proc-web',
+                        name: 'mini-prob-web',
                         publisher: 'generator-langium',
                         version: '1.0.0',
                         engines: {
@@ -24,16 +24,16 @@ export const setupConfigExtended = (): UserConfig => {
                         },
                         contributes: {
                             languages: [{
-                                id: 'mini-proc',
+                                id: 'mini-prob',
                                 extensions: [
-                                    '.mini-proc'
+                                    '.mini-prob'
                                 ],
                                 configuration: './language-configuration.json'
                             }],
                             grammars: [{
-                                language: 'mini-proc',
-                                scopeName: 'source.mini-proc',
-                                path: './mini-proc-grammar.json'
+                                language: 'mini-prob',
+                                scopeName: 'source.mini-prob',
+                                path: './mini-prob-grammar.json'
                             }]
                         }
                     },

@@ -1,14 +1,14 @@
 import { type Module, inject } from 'langium';
 import { createDefaultModule, createDefaultSharedModule, type DefaultSharedModuleContext, type LangiumServices, type LangiumSharedServices, type PartialLangiumServices } from 'langium/lsp';
-import { MiniProcGeneratedModule, MiniProcGeneratedSharedModule } from './generated/module.js';
-import { MiniProcValidator, registerValidationChecks } from './mini-proc-validator.js';
+import { MiniProbGeneratedModule, MiniProbGeneratedSharedModule } from './generated/module.js';
+import { MiniProbValidator, registerValidationChecks } from './mini-prob-validator.js';
 
 /**
  * Declaration of custom services - add your own service classes here.
  */
-export type MiniProcAddedServices = {
+export type MiniProbAddedServices = {
     validation: {
-        MiniProcValidator: MiniProcValidator
+        MiniProbValidator: MiniProbValidator
     }
 }
 
@@ -16,16 +16,16 @@ export type MiniProcAddedServices = {
  * Union of Langium default services and your custom services - use this as constructor parameter
  * of custom service classes.
  */
-export type MiniProcServices = LangiumServices & MiniProcAddedServices
+export type MiniProbServices = LangiumServices & MiniProbAddedServices
 
 /**
  * Dependency injection module that overrides Langium default services and contributes the
  * declared custom services. The Langium defaults can be partially specified to override only
  * selected services, while the custom services must be fully specified.
  */
-export const MiniProcModule: Module<MiniProcServices, PartialLangiumServices & MiniProcAddedServices> = {
+export const MiniProbModule: Module<MiniProbServices, PartialLangiumServices & MiniProbAddedServices> = {
     validation: {
-        MiniProcValidator: () => new MiniProcValidator()
+        MiniProbValidator: () => new MiniProbValidator()
     }
 };
 
@@ -44,25 +44,25 @@ export const MiniProcModule: Module<MiniProcServices, PartialLangiumServices & M
  * @param context Optional module context with the LSP connection
  * @returns An object wrapping the shared services and the language-specific services
  */
-export function createMiniProcServices(context: DefaultSharedModuleContext): {
+export function createMiniProbServices(context: DefaultSharedModuleContext): {
     shared: LangiumSharedServices,
-    MiniProc: MiniProcServices
+    MiniProb: MiniProbServices
 } {
     const shared = inject(
         createDefaultSharedModule(context),
-        MiniProcGeneratedSharedModule
+        MiniProbGeneratedSharedModule
     );
-    const MiniProc = inject(
+    const MiniProb = inject(
         createDefaultModule({ shared }),
-        MiniProcGeneratedModule,
-        MiniProcModule
+        MiniProbGeneratedModule,
+        MiniProbModule
     );
-    shared.ServiceRegistry.register(MiniProc);
-    registerValidationChecks(MiniProc);
+    shared.ServiceRegistry.register(MiniProb);
+    registerValidationChecks(MiniProb);
     if (!context.connection) {
         // We don't run inside a language server
         // Therefore, initialize the configuration provider instantly
         shared.workspace.ConfigurationProvider.initialized({});
     }
-    return { shared, MiniProc };
+    return { shared, MiniProb };
 }

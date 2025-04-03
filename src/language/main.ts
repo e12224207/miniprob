@@ -1,13 +1,13 @@
 import { startLanguageServer } from 'langium/lsp';
 import { NodeFileSystem } from 'langium/node';
 import { createConnection, ProposedFeatures } from 'vscode-languageserver/node.js';
-import { createMiniProcServices } from './mini-proc-module.js';
+import { createMiniProbServices } from './mini-prob-module.js';
 
 // Create a connection to the client
 const connection = createConnection(ProposedFeatures.all);
 
 // Inject the shared services and language-specific services
-const { shared } = createMiniProcServices({ connection, ...NodeFileSystem });
+const { shared } = createMiniProbServices({ connection, ...NodeFileSystem });
 
 // Start the language server with the shared services
 startLanguageServer(shared);

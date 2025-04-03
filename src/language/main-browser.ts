@@ -1,7 +1,7 @@
 import { EmptyFileSystem } from 'langium';
 import { startLanguageServer } from 'langium/lsp';
 import { BrowserMessageReader, BrowserMessageWriter, createConnection } from 'vscode-languageserver/browser.js';
-import { createMiniProcServices } from './mini-proc-module.js';
+import { createMiniProbServices } from './mini-prob-module.js';
 
 declare const self: DedicatedWorkerGlobalScope;
 
@@ -10,6 +10,6 @@ const messageWriter = new BrowserMessageWriter(self);
 
 const connection = createConnection(messageReader, messageWriter);
 
-const { shared } = createMiniProcServices({ connection, ...EmptyFileSystem });
+const { shared } = createMiniProbServices({ connection, ...EmptyFileSystem });
 
 startLanguageServer(shared);
