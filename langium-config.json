@@ -7,6 +7,9 @@
         "monarch": {
             "out": "src/syntaxes/mini-prob.monarch.ts",
             "generate": false
+        },
+        "textMate": {
+            "out": "syntaxes/mini-prob.tmLanguage.json"
         }
     }],
     "out": "src/language/generated"
