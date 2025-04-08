@@ -12,7 +12,7 @@ Func:
         body=Block
     '}';
 FuncCall:
-    ref=ID '(' ArgList ')';
+    ref=[Func:ID] '(' ArgList ')'; // Take Expression?
 
 Block:
     statements+=Stmt+;
@@ -20,17 +20,19 @@ Block:
 Stmt:
     (Assignment | Query | Observation) ';' | IfThenElse | While;
 
+Lval: // maybe infer array type and nonarray (also in scoping)
+    ref=[Decl:ID] ('['index=Expression']')?;
 
-Assignment:
-    leftValue=Lval '=' (expression=Expression | distribution=Distribution | probabilityAssingment=ProbAssign);
-Observation:
-    'observe' '(' truthValue=Expression ')';
-Query:
-    'query' FuncCall;
 IfThenElse:
     'if' '(' condition=Expression ')' '{' thenBlock=Block '}' ('else' '{' elseBlock=Block '}')?;
 While:
     'while' '(' condition=Expression ')' '{' whileBlock=Block '}';
+Assignment:
+    destination=Lval '=' (expression=Expression | distribution=Distribution | probabilityAssingment=ProbAssign);
+Observation:
+    'observe' '(' truthValue=Expression ')';
+Query:
+    'query' FuncCall;
 
 ParamList:
     parameters+=Param (',' parameters+=Param)*;
@@ -39,10 +41,7 @@ Param:
 ArgList:
     arguments+=Arg (',' arguments+=Arg)*;
 Arg:
-    nyRef?='&'? ref=ID;
-
-Lval:
-    ref=ID ('['index=Expression']')?;
+    (byRef?='&'? ref=[Decl:ID]) | expression=Expression; //this expression usage maybe wrong be! ArgList seems to be above all else
 
 Distribution:
     (name='Bernoulli' '(' p=Expression ',' q=Expression ')') |
@@ -72,7 +71,7 @@ Unary infers Expression:
 Primary infers Expression:
     {infer BoolLiteral} value=BOOL | 
     {infer IntLiteral} value=INT |
-    ref=Lval |
+    leftValue=Lval |
     '(' Expression ')';
 
 
@@ -85,9 +84,9 @@ IntArrayType:
   prefix=INT_PREFIX '[' size=INT ']';
 
 terminal INT_PREFIX: /[su][1-9][0-9]*/;
+terminal BOOL returns boolean: /(true|false)/;
 terminal ID: /(?![su][1-9][0-9]*)[a-zA-Z_][a-zA-Z0-9_]*/;
 terminal INT returns number: /[0-9]+/;
-terminal BOOL: /[true|false]/;
 hidden terminal WS: /\s+/;
 hidden terminal BLOCKCOMMENT: /#{[\s\S]*}#/;
 hidden terminal LINECOMMENT: /#.+/;
