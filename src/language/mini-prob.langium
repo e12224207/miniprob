@@ -12,13 +12,13 @@ Func:
         body=Block
     '}';
 FuncCall:
-    ref=[Func:ID] '(' ArgList ')'; // Take Expression?
+    ref=[Func:ID] '(' ArgList? ')';
 
 Block:
     statements+=Stmt+;
 
 Stmt:
-    (Assignment | Query | Observation) ';' | IfThenElse | While;
+    (Assignment | Query | Observation | FuncCall) ';' | IfThenElse | While;
 
 Lval: // maybe infer array type and nonarray (also in scoping)
     ref=[Decl:ID] ('['index=Expression']')?;
@@ -28,9 +28,9 @@ IfThenElse:
 While:
     'while' '(' condition=Expression ')' '{' whileBlock=Block '}';
 Assignment:
-    destination=Lval '=' (expression=Expression | distribution=Distribution | probabilityAssingment=ProbAssign);
+    leftValue=Lval '=' (expression=Expression | distribution=Distribution | probabilityAssingment=ProbAssign);
 Observation:
-    'observe' '(' truthValue=Expression ')';
+    'observe' '(' condition=Expression ')';
 Query:
     'query' FuncCall;
 
@@ -41,7 +41,7 @@ Param:
 ArgList:
     arguments+=Arg (',' arguments+=Arg)*;
 Arg:
-    (byRef?='&'? ref=[Decl:ID]) | expression=Expression; //this expression usage maybe wrong be! ArgList seems to be above all else
+    (byRef?='&'? ref=[Decl:ID]) | expression=Expression;
 
 Distribution:
     (name='Bernoulli' '(' p=Expression ',' q=Expression ')') |

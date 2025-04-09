@@ -1,0 +1,45 @@
+<prog> ::= {decl ';' } func { func }
+
+<decl> ::= type identifier {',' identifier}
+
+<func> ::= identifier '(' param_list? ')' '{' { decl ';' } block '}'
+<func_call> ::= identifier '(' arg_list? ')'
+
+<block> ::= stmt { stmt }
+<stmt> ::= assignment ';' | query ';' | observation ';' | func_call ';' | if_then_else | while 
+
+<assignment> ::= lval '=' (expr | distribution | prob_assign)
+<query> ::= 'query' func_call
+<observation> ::= 'observe' '(' expr ')'
+<if_then_else> ::= 'if' '(' expr ')' '{' block '}' ('else' '{' block '}')?
+<while> ::=  'while '(' expr ')' '{' block '}'
+
+<lval> ::= identifier | identifier '[' expr ']'
+
+<distribution> ::= 'Bernoulli' '(' expr ',' expr ')' | 'Uniform' '(' expr ',' expr ')'
+
+<param> ::= type '&'? identifier
+<param_list> ::= param {',' param}
+<arg> ::= expr | '&'? lval
+<arg_list> ::= arg {',' arg}
+
+<prob_assign> ::= prob_choice {prob_choice} expr
+<prob_choice> ::= expr '{' expr ':' expr '}'
+
+<expr> ::= logical_or
+<logical_or> ::= logical_and { '||' logical_and }
+<logical_and> ::= equality { '&&' equality }
+<equality> ::= comparison { ('==' | '!=') comparison }
+<comparison> ::= term { ('>' | '>=' | '<' | '<=') term }
+<term> ::= factor { ( '+' | '-' ) factor }
+<factor> ::= unary { ('*' | '/') unary }
+<unary> ::= unary_op unary | primary
+<primary> ::= bool | int | lval | '(' expr ')'
+<binary_op> ::= "+" | "-" | "*" | "/" | "==" | "!=" | "<" | "<=" | ">" | ">=" | "&&" | "||"
+<unary_op> ::= "!" | "-"
+
+<identifier> ::= [a-zA-Z_][a-zA-Z0-9_] {[a-zA-Z_][a-zA-Z0-9_]}
+
+<type> ::= 'bool' | 'u'int | 's'int | 'u'int'['int']' | 's'int'['int']'
+<int> ::= [0-9] {[0-9]}
+<bool> ::= "true" | "false"
