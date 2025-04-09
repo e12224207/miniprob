@@ -41,7 +41,7 @@ Param:
 ArgList:
     arguments+=Arg (',' arguments+=Arg)*;
 Arg:
-    (byRef?='&'? ref=[Decl:ID]) | expression=Expression;
+    expression=Expression; //only expre and no ref symbol
 
 Distribution:
     (name='Bernoulli' '(' p=Expression ',' q=Expression ')') |
