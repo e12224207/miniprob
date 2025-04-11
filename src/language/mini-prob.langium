@@ -30,9 +30,9 @@ While:
 TryCatch:
     'try' '{' tryBlock=Block '}' 'catch' '{' catchBlock=Block '}';
 Assignment:
-    leftValue=Lval '=' (expression=Expression | distribution=Distribution | probabilityAssingment=ProbAssign);
+    leftValue=Lval '=' (distribution=Distribution | expression=Expression);
 Observation:
-    'observe' '(' condition=Expression ')';
+    'observe' condition=Expression;
 Query:
     'query' FuncCall;
 
@@ -48,14 +48,11 @@ Arg:
 Distribution:
     (name='Bernoulli' '(' p=Expression ',' q=Expression ')') |
     (name='Uniform' '(' lower=Expression ',' upper=Expression ')');
-
-ProbAssign:
-    choices+=ProbChoice+ fallback=Expression;
 ProbChoice:
-    result=Expression probabilty='{'Expression ':' Expression '}';
+    '{'Expression ':' Expression '}';
 
 Expression:
-    LogicalOr;
+    LogicalOr ({infer ProbabilisticAssignment} (probabilities+=(ProbChoice) fallbacks+=LogicalOr)* );
 LogicalOr infers Expression:
     LogicalAnd ({infer BinaryExpression.left=current} operator='||' right+=LogicalAnd)*;
 LogicalAnd infers Expression:
@@ -69,25 +66,25 @@ Factor infers Expression:
 Division infers Expression:
     Unary ({infer BinaryExpression.left=current} operator=('/' | '%') right+=Unary)*;
 Unary infers Expression:
-    {infer UnaryExpression} operator=('!' | '-') operand=Unary | Primary;
+    ({infer LogicalNegation} operator=('!') operand=Unary) | Primary;
 Primary infers Expression:
     {infer BoolLiteral} value=BOOL | 
-    {infer IntLiteral} sign=('+'|'-')? value=INT INT_PREFIX | //whitespace allowed fir intpreffix(catch in validation)
+    {infer IntLiteral} value=IntLiteral | //whitespace allowed fir intpreffix(catch in validation)
     leftValue=Lval |
     '(' Expression ')';
 
 
 Type:
-    'bool' | IntType | IntArrayType;
+    'bool' | IntType;
 
 IntType:
-    prefix=INT_PREFIX;
-IntArrayType:
-  prefix=INT_PREFIX '[' size=INT ']';
+  prefix=INT_PREFIX ({infer IntArray} '[' size=INT ']')?;
+IntLiteral:
+    sign=('+' | '-')? value=INT suffix=INT_PREFIX;
 
-terminal INT_PREFIX: /[su][1-9][0-9]*/; // 2^29-1 backend
+terminal INT_PREFIX: /[su][1-9][0-9]{0,8}/; // 2^29-1 backend
 terminal BOOL returns boolean: /(true|false)/;
-terminal ID: /(?![su][1-9][0-9]*)[a-zA-Z_][a-zA-Z0-9_\.\:\~]*/;
+terminal ID: /(?!(true|false)|[su][1-9][0-9]*)[a-zA-Z_][a-zA-Z0-9_\.\:\~]*/;
 terminal INT returns number: /[0-9]+/;
 hidden terminal WS: /\s+/;
 hidden terminal ML_COMMENT: /\/\*[\s\S]*?\*\//;

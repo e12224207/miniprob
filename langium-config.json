@@ -8,6 +8,9 @@
             "out": "src/syntaxes/mini-prob.monarch.ts",
             "generate": false
         },
+        "chevrotainParserConfig": {
+            "maxLookahead": 2
+        },
         "textMate": {
             "out": "syntaxes/mini-prob.tmLanguage.json"
         }
