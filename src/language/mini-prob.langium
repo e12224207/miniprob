@@ -6,7 +6,7 @@ entry Program:
 Decl:
     type=Type names+=ID (',' names+=ID)*;
 
-Func:
+Func: //main no params (in backend validate)
     name=ID '(' params=ParamList? ')' '{'
         (declarations+=Decl ';')*
         body=Block
@@ -18,15 +18,17 @@ Block:
     statements+=Stmt+;
 
 Stmt:
-    (Assignment | Query | Observation | FuncCall) ';' | IfThenElse | While;
+    ( Assignment | Query | Observation | FuncCall | 'throw') ';' | IfThenElse | While | TryCatch;
 
 Lval: // maybe infer array type and nonarray (also in scoping)
     ref=[Decl:ID] ('['index=Expression']')?;
 
 IfThenElse:
-    'if' '(' condition=Expression ')' '{' thenBlock=Block '}' ('else' '{' elseBlock=Block '}')?;
+    'if' '(' condition=Expression ')' '{' thenBlock=Block '}' 'else' '{' elseBlock=Block '}';
 While:
     'while' '(' condition=Expression ')' '{' whileBlock=Block '}';
+TryCatch:
+    'try' '{' tryBlock=Block '}' 'catch' '{' catchBlock=Block '}';
 Assignment:
     leftValue=Lval '=' (expression=Expression | distribution=Distribution | probabilityAssingment=ProbAssign);
 Observation:
@@ -57,20 +59,20 @@ Expression:
 LogicalOr infers Expression:
     LogicalAnd ({infer BinaryExpression.left=current} operator='||' right+=LogicalAnd)*;
 LogicalAnd infers Expression:
-    Equality ({infer BinaryExpression.left=current} operator='&&' right+=Equality)*;
-Equality infers Expression:
-    Comparison ({infer BinaryExpression.left=current} operator=('==' | '!=') right+=Comparison)*;
+    Comparison ({infer BinaryExpression.left=current} operator='&&' right+=Comparison)*;
 Comparison infers Expression:
-    Term ({infer BinaryExpression.left=current} operator=('<' | '<=' | '>' | '>=') right+=Term)*;
+    Term ({infer BinaryExpression.left=current} operator=('<' | '<=' | '>' | '>=' | '==' | '!=') right+=Term)*;
 Term infers Expression:
     Factor ({infer BinaryExpression.left=current} operator=('+' | '-') right+=Factor)*;
 Factor infers Expression:
-    Unary ({infer BinaryExpression.left=current} operator=('*' | '/') right+=Unary)*;
+    Division ({infer BinaryExpression.left=current} operator=('*') right+=Division)*;
+Division infers Expression:
+    Unary ({infer BinaryExpression.left=current} operator=('/' | '%') right+=Unary)*;
 Unary infers Expression:
-    Primary | {infer UnaryExpression.operand=current} operator=('!' | '-');
+    {infer UnaryExpression} operator=('!' | '-') operand=Unary | Primary;
 Primary infers Expression:
     {infer BoolLiteral} value=BOOL | 
-    {infer IntLiteral} value=INT |
+    {infer IntLiteral} sign=('+'|'-')? value=INT INT_PREFIX | //whitespace allowed fir intpreffix(catch in validation)
     leftValue=Lval |
     '(' Expression ')';
 
@@ -83,10 +85,10 @@ IntType:
 IntArrayType:
   prefix=INT_PREFIX '[' size=INT ']';
 
-terminal INT_PREFIX: /[su][1-9][0-9]*/;
+terminal INT_PREFIX: /[su][1-9][0-9]*/; // 2^29-1 backend
 terminal BOOL returns boolean: /(true|false)/;
-terminal ID: /(?![su][1-9][0-9]*)[a-zA-Z_][a-zA-Z0-9_]*/;
+terminal ID: /(?![su][1-9][0-9]*)[a-zA-Z_][a-zA-Z0-9_\.\:\~]*/;
 terminal INT returns number: /[0-9]+/;
 hidden terminal WS: /\s+/;
-hidden terminal BLOCKCOMMENT: /#{[\s\S]*}#/;
-hidden terminal LINECOMMENT: /#.+/;
+hidden terminal ML_COMMENT: /\/\*[\s\S]*?\*\//;
+hidden terminal SL_COMMENT: /\/\/[^\n\r]*/;

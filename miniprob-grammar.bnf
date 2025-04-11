@@ -35,8 +35,10 @@
          | <query> ';'
          | <observation> ';'
          | <func_call> ';'
+         | 'throw' ';'
          | <if_then_else>
          | <while>
+         | <try_catch>
 
 <assignment> ::= <lval> '=' <assign_rhs>
 <assign_rhs> ::= <expr>
@@ -47,11 +49,11 @@
 
 <observation> ::= 'observe' '(' <expr> ')'
 
-<if_then_else> ::= 'if' '(' <expr> ')' '{' block '}' <if_else_opt>
-<if_else_opt> ::= 'else' '{' block '}'
-                | ε
+<if_then_else> ::= 'if' '(' <expr> ')' '{' block '}' 'else' '{' block '}'
 
 <while> ::= 'while' '(' <expr> ')' '{' block '}'
+
+<try_catch> ::= 'try' '{' <block> '}' 'catch' '{' <block> '}'
 
 <lval> ::= identifier
          | identifier '[' <expr> ']'
@@ -82,26 +84,21 @@
 <logical_or_tail> ::= '||' <logical_and> <logical_or_tail>
                     | ε
 
-<logical_and> ::= <equality> <logical_and_tail>
-<logical_and_tail> ::= '&&' <equality> <logical_and_tail>
+<logical_and> ::= <comparison> <logical_and_tail>
+<logical_and_tail> ::= '&&' <comparison> <logical_and_tail>
                      | ε
-
-<equality> ::= <comparison> <equality_tail>
-<equality_tail> ::= <equality_op> <comparison> <equality_tail>
-                  | ε
-<equality_op> ::= '==' | '!='
 
 <comparison> ::= <term> <comparison_tail>
 <comparison_tail> ::= <comparison_op> <term> <comparison_tail>
                     | ε
-<comparison_op> ::= '>' | '>=' | '<' | '<='
+<comparison_op> ::= '>' | '>=' | '<' | '<=' | '==' | '!='
 
 <term> ::= <factor> <term_tail>
 <term_tail> ::= ('+' | '-') <factor> <term_tail>
              | ε
 
 <factor> ::= <unary> <factor_tail>
-<factor_tail> ::= ('*' | '/') <unary> <factor_tail>
+<factor_tail> ::= ('*' | '/' | '%') <unary> <factor_tail>
                | ε
 
 <unary> ::= <unary_op> <unary>
