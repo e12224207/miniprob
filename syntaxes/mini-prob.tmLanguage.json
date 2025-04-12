@@ -1,0 +1,55 @@
+{
+  "name": "mini-prob",
+  "scopeName": "source.mini-prob",
+  "fileTypes": [
+    ".pomc"
+  ],
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "name": "keyword.control.mini-prob",
+      "match": "\\b(Bernoulli|Uniform|bool|catch|else|if|observe|query|throw|try|while)\\b"
+    },
+    {
+      "name": "storage.type.int-prefix.mini-prob",
+      "match": "\\b[su][1-9][0-9]*\\b"
+    },
+    {
+      "name": "keyword.control.boolValue.mini-prob",
+      "match": "\\b(true|false)\\b"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.block.mini-prob",
+          "begin": "/\\*",
+          "beginCaptures": {
+            "0": {
+              "name": "punctuation.definition.comment.mini-prob"
+            }
+          },
+          "end": "\\*/",
+          "endCaptures": {
+            "0": {
+              "name": "punctuation.definition.comment.mini-prob"
+            }
+          }
+        },
+        {
+          "begin": "//",
+          "beginCaptures": {
+            "1": {
+              "name": "punctuation.whitespace.comment.leading.mini-prob"
+            }
+          },
+          "end": "(?=$)",
+          "name": "comment.line.mini-prob"
+        }
+      ]
+    }
+  }
+}
