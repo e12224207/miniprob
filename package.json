@@ -23,7 +23,8 @@
         "dev:debug": "vite --debug --force",
         "serve": "npm run dev",
         "test": "vitest run",
-        "gen-build": "npm run langium:generate && npm run build && node ./syntaxes/patchTextMate.js"
+        "gen-build": "npm run langium:generate && npm run build && node ./syntaxes/patchTextMate.js",
+        "production": "npm run langium:generate:production"
     },
     "dependencies": {
         "langium": "~3.4.0",

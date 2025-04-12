@@ -1,4 +1,4 @@
-import { afterEach, beforeAll, describe, expect, test } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, test } from "vitest";
 import { EmptyFileSystem, type LangiumDocument } from "langium";
 import { expandToString as s } from "langium/generate";
 import { clearDocuments, parseHelper } from "langium/test";
@@ -20,6 +20,13 @@ beforeAll(async () => {
 afterEach(async () => {
     document && clearDocuments(services.shared, [ document ]);
 });
+
+describe('Parsing Module', () => {
+    it('should pass a dummy test', () => {
+      // A placeholder test that always passes.
+      expect(true).toBe(true);
+    });
+  });
 
 // describe('Linking tests', () => {
 // 

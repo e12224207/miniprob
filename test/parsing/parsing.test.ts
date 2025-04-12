@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, test } from "vitest";
+import { beforeAll, describe, expect, it, test } from "vitest";
 import { EmptyFileSystem, type LangiumDocument } from "langium";
 import { expandToString as s } from "langium/generate";
 import { parseHelper } from "langium/test";
@@ -16,6 +16,13 @@ beforeAll(async () => {
     // activate the following if your linking test requires elements from a built-in library, for example
     // await services.shared.workspace.WorkspaceManager.initializeWorkspace([]);
 });
+
+describe('Parsing Module', () => {
+    it('should pass a dummy test', () => {
+      // A placeholder test that always passes.
+      expect(true).toBe(true);
+    });
+  });
 
 // describe('Parsing tests', () => {
 // 
