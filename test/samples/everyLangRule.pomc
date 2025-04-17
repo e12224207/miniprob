@@ -1,0 +1,112 @@
+/* 
+   Multi-line comment test.
+   This comment exercises the ML_COMMENT hidden terminal.
+*/
+
+// Single-line comment test (SL_COMMENT)
+
+/* Global declarations: using Decl and IntType with an array. */
+bool globalFlag;
+s32[10] numbers;
+u16 test, tset;
+
+  
+/* 
+   Function: main 
+   Uses the Func rule.
+   Note: The function header has an empty parameter list.
+   After the '{', we first list local declarations (Decl) terminated by ';'
+   then provide the body (a Block of statements).
+*/
+main() {
+    /* Local declarations inside main. */
+    s32 x;
+    bool localFlag;
+
+    /* Assignment statement (Assignment rule):
+         - Lval references a previously declared global: globalFlag.
+         - Right side uses a Distribution – here, the Bernoulli alternative.
+       This exercises the Distribution alternative using 'Bernoulli'. */
+    globalFlag = Bernoulli(true, false);
+
+    /* Another assignment with a different Distribution alternative (Uniform):
+         - x is a local variable.
+         - Uniform supplies a lower and an upper bound.
+    */
+    x = Uniform(0s32, 100s32);
+
+    /* Assignment using an Expression that includes a ProbChoice:
+         - Lval: an array access using numbers[0].
+         - Right-hand side: the IntLiteral "5s32" concatenated with a ProbChoice,
+           written as: { 3s32 : 7s32 }.
+    */
+    numbers[0u1] = 5s32 { 3s32 : 7s32 } 3s32;
+
+    /* Plain function call (FuncCall):
+         - Calls the function helper.
+         - The ArgList here consists of two arguments.
+    */
+    helper(42s32, false);
+
+    /* Query statement (Query):
+         - Begins with the 'query' keyword followed by a FuncCall.
+         - Calls helper again with a different argument.
+    */
+    query helper(10s32, true);
+
+    /* Observation statement (Observation):
+         - Uses the unary operator '!' in the expression.
+         - The expression is a bool literal (globalFlag).
+    */
+    observe (!globalFlag);
+
+    /* A simple 'throw' statement (using the throw alternative of Stmt). */
+    throw;
+
+    /* If–then–else statement (IfThenElse):
+         - Condition is the local variable localFlag.
+         - Then-branch updates x with a binary operator.
+         - Else-branch issues a throw.
+    */
+    if (localFlag) {
+        x = x + numbers[1s1];
+    } else {
+        throw;
+    }
+
+    /* While loop (While):
+         - Condition uses a comparison operator ('<').
+         - Loop body increments x.
+    */
+    while (x < 100s32) {
+        x = x + 1s32;
+    }
+
+    /* Try–catch block (TryCatch):
+         - Try block contains an assignment.
+         - Catch block contains a throw statement.
+    */
+    try {
+        x = x + 1s32;
+    } catch {
+        throw;
+    }
+}
+
+/* 
+   A helper function definition (Func) to support cross-references:
+   - Parameters are defined using ParamList and Param.
+   - The first parameter uses the byRef marker (&).
+*/
+helper(s32 &count, bool flag) {
+    /* Local declaration in helper. */
+    s32 y;
+
+    /* Assignment with binary operator (+) in an expression.
+         Both operands are int literals.
+    */
+    y = 2s32 + 3s32;
+
+    /* An observation statement using a bool literal. */
+    observe (true);
+}

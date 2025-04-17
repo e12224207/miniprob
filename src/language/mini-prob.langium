@@ -12,7 +12,7 @@ Func: //main no params (in backend validate)
         body=Block
     '}';
 FuncCall:
-    ref=[Func:ID] '(' ArgList? ')';
+    ref=[Func:ID] '(' argumentList=ArgList? ')';
 
 Block:
     statements+=Stmt+;
@@ -34,7 +34,7 @@ Assignment:
 Observation:
     'observe' condition=Expression;
 Query:
-    'query' FuncCall;
+    'query' function=FuncCall;
 
 ParamList:
     parameters+=Param (',' parameters+=Param)*;
@@ -49,28 +49,28 @@ Distribution:
     (name='Bernoulli' '(' p=Expression ',' q=Expression ')') |
     (name='Uniform' '(' lower=Expression ',' upper=Expression ')');
 ProbChoice:
-    '{'Expression ':' Expression '}';
+    '{'numerator=Expression ':' denominator=Expression '}';
 
 Expression:
-    LogicalOr ({infer ProbabilisticAssignment} (probabilities+=(ProbChoice) fallbacks+=LogicalOr)* );
+    LogicalOr ({infer ProbabilisticAssignment.head=current} (probabilities+=(ProbChoice) fallbacks+=LogicalOr)+)?; // tmrrw
 LogicalOr infers Expression:
-    LogicalAnd ({infer BinaryExpression.left=current} operator='||' right+=LogicalAnd)*;
+    LogicalAnd ({infer BinaryExpression.left=current} operator='||' right=LogicalAnd)*;
 LogicalAnd infers Expression:
-    Comparison ({infer BinaryExpression.left=current} operator='&&' right+=Comparison)*;
+    Comparison ({infer BinaryExpression.left=current} operator='&&' right=Comparison)*;
 Comparison infers Expression:
-    Term ({infer BinaryExpression.left=current} operator=('<' | '<=' | '>' | '>=' | '==' | '!=') right+=Term)*;
+    Term ({infer BinaryExpression.left=current} operator=('<' | '<=' | '>' | '>=' | '==' | '!=') right=Term)*;
 Term infers Expression:
-    Factor ({infer BinaryExpression.left=current} operator=('+' | '-') right+=Factor)*;
+    Factor ({infer BinaryExpression.left=current} operator=('+' | '-') right=Factor)*;
 Factor infers Expression:
-    Division ({infer BinaryExpression.left=current} operator=('*') right+=Division)*;
+    Division ({infer BinaryExpression.left=current} operator=('*') right=Division)*;
 Division infers Expression:
-    Unary ({infer BinaryExpression.left=current} operator=('/' | '%') right+=Unary)*;
+    Unary ({infer BinaryExpression.left=current} operator=('/' | '%') right=Unary)*;
 Unary infers Expression:
     ({infer LogicalNegation} operator=('!') operand=Unary) | Primary;
 Primary infers Expression:
-    {infer BoolLiteral} value=BOOL | 
-    {infer IntLiteral} value=IntLiteral | //whitespace allowed fir intpreffix(catch in validation)
-    leftValue=Lval |
+    {infer BoolLiteral} literal=BOOL | 
+    {infer IntLiteral} literal=IntegerLiteral | //whitespace allowed fir intpreffix(catch in validation)
+    Lval |
     '(' Expression ')';
 
 
@@ -79,7 +79,7 @@ Type:
 
 IntType:
   prefix=INT_PREFIX ({infer IntArray} '[' size=INT ']')?;
-IntLiteral:
+IntegerLiteral: // same name as infer IntLiteral creates minor conflicts
     sign=('+' | '-')? value=INT suffix=INT_PREFIX;
 
 terminal INT_PREFIX: /[su][1-9][0-9]{0,8}/; // 2^29-1 backend

@@ -13,19 +13,14 @@ export class MiniProbScopeProvider extends DefaultScopeProvider {
     override getScope(context: ReferenceInfo): Scope {
 
         const container = context.container;
-
         if (context.property === 'ref' && container) {
-            console.log(container.$type)
             if (isFuncCall(container)) { // scope functions based on params count and byRef�
                 const program = AstUtils.getContainerOfType(container, isProgram)!;
                 // filter Func for body -> only real Func and not ghost Reference
                 const descriptions = program.functions.filter(func => func.body).map(func => this.astNodeDescriptionProvider.createDescription(func, func.name));
-                console.log(program.functions);
                 return new MapScope(descriptions);
             } else if (isLval(container) || isArg(container)) { //scope lval based on arraytype �
-                console.log("lval container reference")
                 const enclosingFunction = AstUtils.getContainerOfType(container, isFunc);
-                console.log("Enclosed byf Func?" + enclosingFunction !== undefined)
                 if (enclosingFunction) {
                     const localDeclarations = enclosingFunction.declarations || [];
                     const enclosingProgram = AstUtils.getContainerOfType(container, isProgram)!;

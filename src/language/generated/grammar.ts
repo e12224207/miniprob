@@ -243,11 +243,16 @@ export const MiniProbGrammar = (): Grammar => loadedMiniProbGrammar ?? (loadedMi
             "value": "("
           },
           {
-            "$type": "RuleCall",
-            "rule": {
-              "$ref": "#/rules@15"
+            "$type": "Assignment",
+            "feature": "argumentList",
+            "operator": "=",
+            "terminal": {
+              "$type": "RuleCall",
+              "rule": {
+                "$ref": "#/rules@15"
+              },
+              "arguments": []
             },
-            "arguments": [],
             "cardinality": "?"
           },
           {
@@ -735,11 +740,16 @@ export const MiniProbGrammar = (): Grammar => loadedMiniProbGrammar ?? (loadedMi
             "value": "query"
           },
           {
-            "$type": "RuleCall",
-            "rule": {
-              "$ref": "#/rules@3"
-            },
-            "arguments": []
+            "$type": "Assignment",
+            "feature": "function",
+            "operator": "=",
+            "terminal": {
+              "$type": "RuleCall",
+              "rule": {
+                "$ref": "#/rules@3"
+              },
+              "arguments": []
+            }
           }
         ]
       },
@@ -1045,22 +1055,32 @@ export const MiniProbGrammar = (): Grammar => loadedMiniProbGrammar ?? (loadedMi
             "value": "{"
           },
           {
-            "$type": "RuleCall",
-            "rule": {
-              "$ref": "#/rules@19"
-            },
-            "arguments": []
+            "$type": "Assignment",
+            "feature": "numerator",
+            "operator": "=",
+            "terminal": {
+              "$type": "RuleCall",
+              "rule": {
+                "$ref": "#/rules@19"
+              },
+              "arguments": []
+            }
           },
           {
             "$type": "Keyword",
             "value": ":"
           },
           {
-            "$type": "RuleCall",
-            "rule": {
-              "$ref": "#/rules@19"
-            },
-            "arguments": []
+            "$type": "Assignment",
+            "feature": "denominator",
+            "operator": "=",
+            "terminal": {
+              "$type": "RuleCall",
+              "rule": {
+                "$ref": "#/rules@19"
+              },
+              "arguments": []
+            }
           },
           {
             "$type": "Keyword",
@@ -1096,7 +1116,9 @@ export const MiniProbGrammar = (): Grammar => loadedMiniProbGrammar ?? (loadedMi
                 "inferredType": {
                   "$type": "InferredType",
                   "name": "ProbabilisticAssignment"
-                }
+                },
+                "feature": "head",
+                "operator": "="
               },
               {
                 "$type": "Group",
@@ -1126,9 +1148,10 @@ export const MiniProbGrammar = (): Grammar => loadedMiniProbGrammar ?? (loadedMi
                     }
                   }
                 ],
-                "cardinality": "*"
+                "cardinality": "+"
               }
-            ]
+            ],
+            "cardinality": "?"
           }
         ]
       },
@@ -1180,7 +1203,7 @@ export const MiniProbGrammar = (): Grammar => loadedMiniProbGrammar ?? (loadedMi
               {
                 "$type": "Assignment",
                 "feature": "right",
-                "operator": "+=",
+                "operator": "=",
                 "terminal": {
                   "$type": "RuleCall",
                   "rule": {
@@ -1242,7 +1265,7 @@ export const MiniProbGrammar = (): Grammar => loadedMiniProbGrammar ?? (loadedMi
               {
                 "$type": "Assignment",
                 "feature": "right",
-                "operator": "+=",
+                "operator": "=",
                 "terminal": {
                   "$type": "RuleCall",
                   "rule": {
@@ -1329,7 +1352,7 @@ export const MiniProbGrammar = (): Grammar => loadedMiniProbGrammar ?? (loadedMi
               {
                 "$type": "Assignment",
                 "feature": "right",
-                "operator": "+=",
+                "operator": "=",
                 "terminal": {
                   "$type": "RuleCall",
                   "rule": {
@@ -1400,7 +1423,7 @@ export const MiniProbGrammar = (): Grammar => loadedMiniProbGrammar ?? (loadedMi
               {
                 "$type": "Assignment",
                 "feature": "right",
-                "operator": "+=",
+                "operator": "=",
                 "terminal": {
                   "$type": "RuleCall",
                   "rule": {
@@ -1462,7 +1485,7 @@ export const MiniProbGrammar = (): Grammar => loadedMiniProbGrammar ?? (loadedMi
               {
                 "$type": "Assignment",
                 "feature": "right",
-                "operator": "+=",
+                "operator": "=",
                 "terminal": {
                   "$type": "RuleCall",
                   "rule": {
@@ -1533,7 +1556,7 @@ export const MiniProbGrammar = (): Grammar => loadedMiniProbGrammar ?? (loadedMi
               {
                 "$type": "Assignment",
                 "feature": "right",
-                "operator": "+=",
+                "operator": "=",
                 "terminal": {
                   "$type": "RuleCall",
                   "rule": {
@@ -1635,7 +1658,7 @@ export const MiniProbGrammar = (): Grammar => loadedMiniProbGrammar ?? (loadedMi
               },
               {
                 "$type": "Assignment",
-                "feature": "value",
+                "feature": "literal",
                 "operator": "=",
                 "terminal": {
                   "$type": "RuleCall",
@@ -1659,7 +1682,7 @@ export const MiniProbGrammar = (): Grammar => loadedMiniProbGrammar ?? (loadedMi
               },
               {
                 "$type": "Assignment",
-                "feature": "value",
+                "feature": "literal",
                 "operator": "=",
                 "terminal": {
                   "$type": "RuleCall",
@@ -1672,16 +1695,11 @@ export const MiniProbGrammar = (): Grammar => loadedMiniProbGrammar ?? (loadedMi
             ]
           },
           {
-            "$type": "Assignment",
-            "feature": "leftValue",
-            "operator": "=",
-            "terminal": {
-              "$type": "RuleCall",
-              "rule": {
-                "$ref": "#/rules@6"
-              },
-              "arguments": []
-            }
+            "$type": "RuleCall",
+            "rule": {
+              "$ref": "#/rules@6"
+            },
+            "arguments": []
           },
           {
             "$type": "Group",
@@ -1800,7 +1818,7 @@ export const MiniProbGrammar = (): Grammar => loadedMiniProbGrammar ?? (loadedMi
     },
     {
       "$type": "ParserRule",
-      "name": "IntLiteral",
+      "name": "IntegerLiteral",
       "definition": {
         "$type": "Group",
         "elements": [
