@@ -46,7 +46,6 @@ describe('validate based on samples from https://github.com/michiari/POMC/tree/p
         // Read the file content as a string using UTF-8 encoding
         const fileContent = readFileSync(filePath, 'utf8');
         const document = await parse(fileContent);
-        // Optionally, you can perform a validation check
         if (checkDocumentValid(document)) {
           expect(
             document.diagnostics?.map(diagnosticToString).join('\n')

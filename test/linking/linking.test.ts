@@ -135,9 +135,9 @@ describe('Linking test', () => {
     expect(
       ((document.parseResult.value.functions[0].body.statements[0] as IfThenElse).condition as Lval).ref.error?.message
     ).toEqual(expect.stringContaining('Could not resolve reference to Decl named \'flag\''));
-    expect(((document.parseResult.value.functions[0].body.statements[0] as IfThenElse).thenBlock.statements[0] as Assignment).leftValue.ref.error).toBeTruthy();
+    expect(((document.parseResult.value.functions[0].body.statements[0] as IfThenElse).thenBlock?.statements[0] as Assignment).leftValue.ref.error).toBeTruthy();
     expect(
-      ((document.parseResult.value.functions[0].body.statements[0] as IfThenElse).thenBlock.statements[0] as Assignment).leftValue.ref.error!.message
+      ((document.parseResult.value.functions[0].body.statements[0] as IfThenElse).thenBlock?.statements[0] as Assignment).leftValue.ref.error!.message
     ).toEqual(expect.stringContaining('Could not resolve reference to Decl named \'y\''));
   });
 

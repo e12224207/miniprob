@@ -14,8 +14,9 @@ export class MiniProbScopeProvider extends DefaultScopeProvider {
 
         const container = context.container;
         if (context.property === 'ref' && container) {
-            if (isFuncCall(container)) { // scope functions based on params count and byRef�
+            if (isFuncCall(container)) { // scope functions based on params count and byRef �
                 const program = AstUtils.getContainerOfType(container, isProgram)!;
+                //const 
                 // filter Func for body -> only real Func and not ghost Reference
                 const descriptions = program.functions.filter(func => func.body).map(func => this.astNodeDescriptionProvider.createDescription(func, func.name));
                 return new MapScope(descriptions);

@@ -20,19 +20,6 @@ export const MiniProbGrammar = (): Grammar => loadedMiniProbGrammar ?? (loadedMi
         "$type": "Group",
         "elements": [
           {
-            "$type": "Assignment",
-            "feature": "preamble",
-            "operator": "?=",
-            "terminal": {
-              "$type": "RuleCall",
-              "rule": {
-                "$ref": "#/rules@35"
-              },
-              "arguments": []
-            },
-            "cardinality": "?"
-          },
-          {
             "$type": "Group",
             "elements": [
               {

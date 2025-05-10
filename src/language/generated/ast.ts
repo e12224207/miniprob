@@ -12,7 +12,6 @@ export const MiniProbTerminals = {
     BOOL: /(true|false)/,
     ID: /(?!(true|false)|[su][1-9][0-9]*)[a-zA-Z_][a-zA-Z0-9_\.\:\~]*/,
     INT: /[0-9]+/,
-    Preamble: /(.|\s)*program:/,
     WS: /\s+/,
     ML_COMMENT: /\/\*[\s\S]*?\*\//,
     SL_COMMENT: /\/\/[^\n\r]*/,
@@ -363,7 +362,6 @@ export interface Program extends AstNode {
     readonly $type: 'Program';
     declarations: Array<Decl>;
     functions: Array<Func>;
-    preamble: boolean;
 }
 
 export const Program = 'Program';
@@ -704,8 +702,7 @@ export class MiniProbAstReflection extends AbstractAstReflection {
                     name: Program,
                     properties: [
                         { name: 'declarations', defaultValue: [] },
-                        { name: 'functions', defaultValue: [] },
-                        { name: 'preamble', defaultValue: false }
+                        { name: 'functions', defaultValue: [] }
                     ]
                 };
             }

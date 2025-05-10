@@ -231,12 +231,12 @@ describe('Parsing tests for all rules', () => {
         const ifThenElse = helper.body.statements[7] as IfThenElse;
         expect(ifThenElse.$type).toBe('IfThenElse');
         expect(ifThenElse.condition.$type).toBe('Lval');
-        expect(ifThenElse.thenBlock.statements[0].$type).toBe('Assignment');
+        expect(ifThenElse.thenBlock!.statements[0].$type).toBe('Assignment');
         expect(
-            ((((ifThenElse.thenBlock.statements[0] as Assignment).expression as BinaryExpression).right as Lval).index as IntLiteral).literal.value
+            ((((ifThenElse.thenBlock!.statements[0] as Assignment).expression as BinaryExpression).right as Lval).index as IntLiteral).literal.value
         ).toBe(1);
-        expect(ifThenElse.elseBlock.statements[0].$type).toBe('Stmt');
-        expect(ifThenElse.thenBlock.statements.length + ifThenElse.elseBlock.statements.length).toBe(2);
+        expect(ifThenElse.elseBlock!.statements[0].$type).toBe('Stmt');
+        expect(ifThenElse.thenBlock!.statements.length + ifThenElse.elseBlock!.statements.length).toBe(2);
 
         /* While loop (While):
              while (x < 100s32) {
@@ -246,7 +246,7 @@ describe('Parsing tests for all rules', () => {
         const whileStmt = helper.body.statements[8] as While;
         expect(whileStmt.$type).toBe('While');
         expect((whileStmt.condition as BinaryExpression).operator).toBe('<');
-        expect(whileStmt.whileBlock.statements.length).toBe(1);
+        expect(whileStmt.whileBlock!.statements.length).toBe(1);
 
         /* Try–catch block (TryCatch):
             try {
@@ -256,8 +256,8 @@ describe('Parsing tests for all rules', () => {
             }
         */
         expect(helper.body.statements[9].$type).toBe('TryCatch');
-        expect((helper.body.statements[9] as TryCatch).tryBlock.statements.length).toBe(1);
-        expect((helper.body.statements[9] as TryCatch).catchBlock.statements.length).toBe(1);
+        expect((helper.body.statements[9] as TryCatch).tryBlock!.statements.length).toBe(1);
+        expect((helper.body.statements[9] as TryCatch).catchBlock!.statements.length).toBe(1);
     });
 });
 

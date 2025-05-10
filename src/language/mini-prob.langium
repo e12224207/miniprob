@@ -1,7 +1,6 @@
 grammar MiniProb
 
 entry Program:
-    preamble?=Preamble?
     (declarations+=Decl ';')* functions+=Func+;
 
 Decl:
