@@ -20,6 +20,19 @@ export const MiniProbGrammar = (): Grammar => loadedMiniProbGrammar ?? (loadedMi
         "$type": "Group",
         "elements": [
           {
+            "$type": "Assignment",
+            "feature": "preamble",
+            "operator": "?=",
+            "terminal": {
+              "$type": "RuleCall",
+              "rule": {
+                "$ref": "#/rules@35"
+              },
+              "arguments": []
+            },
+            "cardinality": "?"
+          },
+          {
             "$type": "Group",
             "elements": [
               {
@@ -477,7 +490,8 @@ export const MiniProbGrammar = (): Grammar => loadedMiniProbGrammar ?? (loadedMi
                 "$ref": "#/rules@4"
               },
               "arguments": []
-            }
+            },
+            "cardinality": "?"
           },
           {
             "$type": "Keyword",
@@ -501,7 +515,8 @@ export const MiniProbGrammar = (): Grammar => loadedMiniProbGrammar ?? (loadedMi
                 "$ref": "#/rules@4"
               },
               "arguments": []
-            }
+            },
+            "cardinality": "?"
           },
           {
             "$type": "Keyword",
@@ -560,7 +575,8 @@ export const MiniProbGrammar = (): Grammar => loadedMiniProbGrammar ?? (loadedMi
                 "$ref": "#/rules@4"
               },
               "arguments": []
-            }
+            },
+            "cardinality": "?"
           },
           {
             "$type": "Keyword",
@@ -599,7 +615,8 @@ export const MiniProbGrammar = (): Grammar => loadedMiniProbGrammar ?? (loadedMi
                 "$ref": "#/rules@4"
               },
               "arguments": []
-            }
+            },
+            "cardinality": "?"
           },
           {
             "$type": "Keyword",
@@ -623,7 +640,8 @@ export const MiniProbGrammar = (): Grammar => loadedMiniProbGrammar ?? (loadedMi
                 "$ref": "#/rules@4"
               },
               "arguments": []
-            }
+            },
+            "cardinality": "?"
           },
           {
             "$type": "Keyword",
@@ -1918,6 +1936,16 @@ export const MiniProbGrammar = (): Grammar => loadedMiniProbGrammar ?? (loadedMi
       "definition": {
         "$type": "RegexToken",
         "regex": "/[0-9]+/"
+      },
+      "fragment": false,
+      "hidden": false
+    },
+    {
+      "$type": "TerminalRule",
+      "name": "Preamble",
+      "definition": {
+        "$type": "RegexToken",
+        "regex": "/(.|\\\\s)*program:/"
       },
       "fragment": false,
       "hidden": false

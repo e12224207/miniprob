@@ -12,6 +12,7 @@ export const MiniProbTerminals = {
     BOOL: /(true|false)/,
     ID: /(?!(true|false)|[su][1-9][0-9]*)[a-zA-Z_][a-zA-Z0-9_\.\:\~]*/,
     INT: /[0-9]+/,
+    Preamble: /(.|\s)*program:/,
     WS: /\s+/,
     ML_COMMENT: /\/\*[\s\S]*?\*\//,
     SL_COMMENT: /\/\/[^\n\r]*/,
@@ -220,8 +221,8 @@ export interface IfThenElse extends AstNode {
     readonly $container: Block;
     readonly $type: 'IfThenElse';
     condition: Expression;
-    elseBlock: Block;
-    thenBlock: Block;
+    elseBlock?: Block;
+    thenBlock?: Block;
 }
 
 export const IfThenElse = 'IfThenElse';
@@ -362,6 +363,7 @@ export interface Program extends AstNode {
     readonly $type: 'Program';
     declarations: Array<Decl>;
     functions: Array<Func>;
+    preamble: boolean;
 }
 
 export const Program = 'Program';
@@ -385,8 +387,8 @@ export function isQuery(item: unknown): item is Query {
 export interface TryCatch extends AstNode {
     readonly $container: Block;
     readonly $type: 'TryCatch';
-    catchBlock: Block;
-    tryBlock: Block;
+    catchBlock?: Block;
+    tryBlock?: Block;
 }
 
 export const TryCatch = 'TryCatch';
@@ -399,7 +401,7 @@ export interface While extends AstNode {
     readonly $container: Block;
     readonly $type: 'While';
     condition: Expression;
-    whileBlock: Block;
+    whileBlock?: Block;
 }
 
 export const While = 'While';
@@ -702,7 +704,8 @@ export class MiniProbAstReflection extends AbstractAstReflection {
                     name: Program,
                     properties: [
                         { name: 'declarations', defaultValue: [] },
-                        { name: 'functions', defaultValue: [] }
+                        { name: 'functions', defaultValue: [] },
+                        { name: 'preamble', defaultValue: false }
                     ]
                 };
             }
