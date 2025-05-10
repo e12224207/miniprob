@@ -10,7 +10,10 @@ import { AbstractAstReflection } from 'langium';
 export const MiniProbTerminals = {
     INT_PREFIX: /[su][1-9][0-9]{0,8}/,
     BOOL: /(true|false)/,
+    PROB_QUERY: /probabilistic query:.*;/,
+    FORMULA: /formula\s?=\s?.*;/,
     ID: /(?!(true|false)|[su][1-9][0-9]*)[a-zA-Z_][a-zA-Z0-9_\.\:\~]*/,
+    STRING: /"(\\.|[^"\\])*"|'(\\.|[^'\\])*'/,
     INT: /[0-9]+/,
     WS: /\s+/,
     ML_COMMENT: /\/\*[\s\S]*?\*\//,
@@ -22,6 +25,7 @@ export type MiniProbTerminalNames = keyof typeof MiniProbTerminals;
 export type MiniProbKeywordNames = 
     | "!"
     | "!="
+    | "#include"
     | "%"
     | "&"
     | "&&"
@@ -49,6 +53,7 @@ export type MiniProbKeywordNames =
     | "else"
     | "if"
     | "observe"
+    | "program:"
     | "query"
     | "throw"
     | "try"
@@ -186,6 +191,18 @@ export const Distribution = 'Distribution';
 
 export function isDistribution(item: unknown): item is Distribution {
     return reflection.isInstance(item, Distribution);
+}
+
+export interface FileImport extends AstNode {
+    readonly $container: Program;
+    readonly $type: 'FileImport';
+    file: string;
+}
+
+export const FileImport = 'FileImport';
+
+export function isFileImport(item: unknown): item is FileImport {
+    return reflection.isInstance(item, FileImport);
 }
 
 export interface Func extends AstNode {
@@ -361,7 +378,10 @@ export function isProbChoice(item: unknown): item is ProbChoice {
 export interface Program extends AstNode {
     readonly $type: 'Program';
     declarations: Array<Decl>;
+    fileImports: Array<FileImport>;
+    formula?: string;
     functions: Array<Func>;
+    probabilisticQuery?: string;
 }
 
 export const Program = 'Program';
@@ -429,6 +449,7 @@ export type MiniProbAstType = {
     Decl: Decl
     Distribution: Distribution
     Expression: Expression
+    FileImport: FileImport
     Func: Func
     FuncCall: FuncCall
     IfThenElse: IfThenElse
@@ -454,7 +475,7 @@ export type MiniProbAstType = {
 export class MiniProbAstReflection extends AbstractAstReflection {
 
     getAllTypes(): string[] {
-        return [Arg, ArgList, Assignment, BinaryExpression, Block, BoolLiteral, Decl, Distribution, Expression, Func, FuncCall, IfThenElse, IntArray, IntLiteral, IntType, IntegerLiteral, LogicalNegation, Lval, Observation, Param, ParamList, ProbChoice, ProbabilisticAssignment, Program, Query, Stmt, TryCatch, Type, While];
+        return [Arg, ArgList, Assignment, BinaryExpression, Block, BoolLiteral, Decl, Distribution, Expression, FileImport, Func, FuncCall, IfThenElse, IntArray, IntLiteral, IntType, IntegerLiteral, LogicalNegation, Lval, Observation, Param, ParamList, ProbChoice, ProbabilisticAssignment, Program, Query, Stmt, TryCatch, Type, While];
     }
 
     protected override computeIsSubtype(subtype: string, supertype: string): boolean {
@@ -575,6 +596,14 @@ export class MiniProbAstReflection extends AbstractAstReflection {
                         { name: 'p' },
                         { name: 'q' },
                         { name: 'upper' }
+                    ]
+                };
+            }
+            case FileImport: {
+                return {
+                    name: FileImport,
+                    properties: [
+                        { name: 'file' }
                     ]
                 };
             }
@@ -702,7 +731,10 @@ export class MiniProbAstReflection extends AbstractAstReflection {
                     name: Program,
                     properties: [
                         { name: 'declarations', defaultValue: [] },
-                        { name: 'functions', defaultValue: [] }
+                        { name: 'fileImports', defaultValue: [] },
+                        { name: 'formula' },
+                        { name: 'functions', defaultValue: [] },
+                        { name: 'probabilisticQuery' }
                     ]
                 };
             }

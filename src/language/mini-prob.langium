@@ -1,7 +1,14 @@
 grammar MiniProb
 
 entry Program:
+    fileImports+=FileImport?
+    probabilisticQuery=PROB_QUERY? // not tested: out of scope
+    formula=FORMULA? // not tested: out of scope
+    'program:'?
     (declarations+=Decl ';')* functions+=Func+;
+
+FileImport:
+    '#include' file=STRING;
 
 Decl:
     type=Type names+=ID (',' names+=ID)*;
@@ -84,9 +91,11 @@ IntegerLiteral: // same name as infer IntLiteral creates minor conflicts
 
 terminal INT_PREFIX: /[su][1-9][0-9]{0,8}/; // 2^29-1 backend
 terminal BOOL returns boolean: /(true|false)/;
+terminal PROB_QUERY: /probabilistic query:.*;/;
+terminal FORMULA: /formula\s?=\s?.*;/;
 terminal ID: /(?!(true|false)|[su][1-9][0-9]*)[a-zA-Z_][a-zA-Z0-9_\.\:\~]*/;
+terminal STRING: /"(\\.|[^"\\])*"|'(\\.|[^'\\])*'/;
 terminal INT returns number: /[0-9]+/;
-terminal Preamble: /(.|\s)*program:/;
 hidden terminal WS: /\s+/;
 hidden terminal ML_COMMENT: /\/\*[\s\S]*?\*\//;
 hidden terminal SL_COMMENT: /\/\/[^\n\r]*/;

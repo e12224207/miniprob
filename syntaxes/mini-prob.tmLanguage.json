@@ -10,7 +10,27 @@
     },
     {
       "name": "keyword.control.mini-prob",
-      "match": "\\b(Bernoulli|Uniform|bool|catch|else|if|observe|query|throw|try|while)\\b"
+      "match": "\\b(Bernoulli|Uniform|bool|catch|else|if|observe|query|throw|try|while)\\b|\\B(#include)\\b|\\b(program:)\\B"
+    },
+    {
+      "name": "string.quoted.double.mini-prob",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "include": "#string-character-escape"
+        }
+      ]
+    },
+    {
+      "name": "string.quoted.single.mini-prob",
+      "begin": "'",
+      "end": "'",
+      "patterns": [
+        {
+          "include": "#string-character-escape"
+        }
+      ]
     },
     {
       "name": "storage.type.int-prefix.mini-prob",
@@ -50,6 +70,10 @@
           "name": "comment.line.mini-prob"
         }
       ]
+    },
+    "string-character-escape": {
+      "name": "constant.character.escape.mini-prob",
+      "match": "\\\\(x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4}|u\\{[0-9A-Fa-f]+\\}|[0-2][0-7]{0,2}|3[0-6][0-7]?|37[0-7]?|[4-7][0-7]?|.|$)"
     }
   }
 }
