@@ -1,15 +1,19 @@
 import { AstNodeDescription, AstNodeDescriptionProvider, AstUtils, DefaultScopeProvider, LangiumCoreServices, MapScope, ReferenceInfo, Scope, URI, DefaultIndexManager } from "langium";
-import { Decl, FileImport, Func, isArg, isDecl, isFunc, isFuncCall, isLval, isProgram, Program } from "./generated/ast.js";
+import { Decl, FileImport, Func, isArg, isDecl, isFunc, isFuncCall, isLval, isProgram, Program } from "../generated/ast.js";
 import { dirname, join, posix } from "path";
+import { SharedMiniProbCache } from "./mini-prob-caching.js";
+import { MiniProbServices } from "../mini-prob-module.js";
 // ScopeOptions AstNodeDescription
 
 export class MiniProbScopeProvider extends DefaultScopeProvider {
 
     private astNodeDescriptionProvider: AstNodeDescriptionProvider;
-    constructor(services: LangiumCoreServices) {
-        super(services);
+    //private readonly descriptionCache: SharedMiniProbCache;
+    constructor(services: MiniProbServices) {
+        super(services);        
         //get some helper services
         this.astNodeDescriptionProvider = services.workspace.AstNodeDescriptionProvider;
+        //this.descriptionCache = services.caching.MiniProbCache;
     }
     override getScope(context: ReferenceInfo): Scope {
 
@@ -71,16 +75,11 @@ export class MiniProbScopeProvider extends DefaultScopeProvider {
             return currentUri.with({ path: filePath }).toString();
         });
 
-        if (targetNodeType === Func) {
-            console.log("Import uris for functions" + [...importUris]);
+        if (targetNodeType === Func) {            
             var temp = this.indexManager.allElements(Func, new Set<string>(importUris)).toArray();
-            console.log(temp.length)
-            temp.forEach(t => console.log(t.name));
             return temp;
         } else if (targetNodeType === Decl) {
             var temp = this.indexManager.allElements(Decl, new Set<string>(importUris)).filter(decl => !decl.path.includes('function')).toArray();
-            console.log(temp.length)
-            temp.forEach(t => console.log(t.name));
             return temp;
         }
 

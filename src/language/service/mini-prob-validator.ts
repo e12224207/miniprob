@@ -1,6 +1,7 @@
-import { AstUtils, type ValidationAcceptor, type ValidationChecks } from 'langium';
-import { isLval, isProgram, isFunc, Lval, type Decl, type MiniProbAstType, type Param, Func, FuncCall, ProbabilisticAssignment, ProbChoice, IntLiteral } from './generated/ast.js'; //Person from here
-import type { MiniProbServices } from './mini-prob-module.js';
+import { AstNodeDescription, AstUtils, type ValidationAcceptor, type ValidationChecks } from 'langium';
+import { isLval, isProgram, isFunc, Lval, Decl, type MiniProbAstType, type Param, Func, FuncCall, ProbabilisticAssignment, ProbChoice, IntLiteral } from '../generated/ast.js'; //Person from here
+import type { MiniProbServices } from '../mini-prob-module.js';
+import { SharedMiniProbCache } from './mini-prob-caching.js';
 
 /**
  * Register custom validation checks.
@@ -21,6 +22,14 @@ export function registerValidationChecks(services: MiniProbServices) {
  * Implementation of custom validations.
  */
 export class MiniProbValidator {
+
+    private readonly descriptionCache: SharedMiniProbCache;
+    /**
+     *
+     */
+    constructor(services: MiniProbServices) {
+        this.descriptionCache = services.caching.MiniProbCache;
+    }
 
     checkFunctionCalls(node: FuncCall, accept: ValidationAcceptor) {
         const targetFunc = AstUtils.getContainerOfType(node, isProgram)!.functions.find(func => func.name === node.ref.$refText);
@@ -59,7 +68,7 @@ export class MiniProbValidator {
             accept('error', 'Negative values are not allowed', { //even reached? sign prop necessary
                 node,
             });
-        } else if ( e > 1) {
+        } else if (e > 1) {
             accept('error', 'Resulting probability must be between 0..1', {
                 node
             });
@@ -70,6 +79,9 @@ export class MiniProbValidator {
 
         const program = AstUtils.getContainerOfType(node, isProgram)!;
         const func = AstUtils.getContainerOfType(node, isFunc)!;
+
+        const importKey = AstUtils.getDocument(node).uri.path + `_imported-${Decl}`;
+
 
         const scopedArrays = [ // use cahcing to also include imports
             ...[...program.declarations, ...func.declarations]
@@ -83,10 +95,13 @@ export class MiniProbValidator {
         if (node.index) {
             // handle index access of non array type
             if (!scopedArrays.includes(node.ref.$refText)) {
-                accept('error', 'This is not an array type.', {
-                    node,
-                    property: 'index'
-                });
+                const importedRef = this.descriptionCache.get(importKey)?.getElement(node.ref.$refText);
+                if (!importedRef || importedRef.type !== 'IntArray') {
+                    accept('error', 'This is not an array type.', {
+                        node,
+                        property: 'index'
+                    });
+                }
             }
         } else {
             //handle missing index for array type / no arr1 = arr2 allowed; index must be present when referencing an array
@@ -94,8 +109,17 @@ export class MiniProbValidator {
                 accept('error', 'Missing indexed access of array type', {
                     node,
                     property: 'index'
+                });
+                return;
+            }
+            const importedRef = this.descriptionCache.get(importKey)?.getElement(node.ref.$refText);
+            if (importedRef && importedRef.type === 'IntArray') {
+                accept('error', 'Missing indexed access of imported array type', {
+                    node,
+                    property: 'index'
                 })
             }
+
         }
     }
 

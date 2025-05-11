@@ -5,7 +5,7 @@ import {
   LangiumDocument
 } from 'langium';
 import type { AstNode } from 'langium';
-import { Program } from './generated/ast.js';
+import { Program } from '../generated/ast.js';
 //import type { Program, Decl } from './generated/ast.ts';
 
 export class MiniProbScopeComputation extends DefaultScopeComputation {

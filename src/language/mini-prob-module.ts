@@ -1,9 +1,10 @@
 import { type Module, inject } from 'langium';
 import { createDefaultModule, createDefaultSharedModule, type DefaultSharedModuleContext, type LangiumServices, type LangiumSharedServices, type PartialLangiumServices } from 'langium/lsp';
 import { MiniProbGeneratedModule, MiniProbGeneratedSharedModule } from './generated/module.js';
-import { MiniProbValidator, registerValidationChecks } from './mini-prob-validator.js';
-import { MiniProbScopeProvider } from './mini-prob-scope-provider.js';
-import { MiniProbScopeComputation } from './min-prob-scope-computation.js';
+import { MiniProbValidator, registerValidationChecks } from './service/mini-prob-validator.js';
+import { MiniProbScopeProvider } from './service/mini-prob-scope-provider.js';
+import { MiniProbScopeComputation } from './service/min-prob-scope-computation.js';
+import { SharedMiniProbCache } from './service/mini-prob-caching.js';
 
 /**
  * Declaration of custom services - add your own service classes here.
@@ -11,6 +12,9 @@ import { MiniProbScopeComputation } from './min-prob-scope-computation.js';
 export type MiniProbAddedServices = {
     validation: {
         MiniProbValidator: MiniProbValidator
+    },
+    caching: {
+        MiniProbCache: SharedMiniProbCache
     }
 }
 
@@ -27,12 +31,15 @@ export type MiniProbServices = LangiumServices & MiniProbAddedServices
  */
 export const MiniProbModule: Module<MiniProbServices, PartialLangiumServices & MiniProbAddedServices> = {
     validation: {
-        MiniProbValidator: () => new MiniProbValidator()        
+        MiniProbValidator: (services) => new MiniProbValidator(services)        
     },
     references: {
         ScopeProvider: (services) => new MiniProbScopeProvider(services),
-        ScopeComputation: (services) => new MiniProbScopeComputation(services)
+        ScopeComputation: (services) => new MiniProbScopeComputation(services),        
     },
+    caching: {
+        MiniProbCache: () => new SharedMiniProbCache()
+    }
 };
 
 /**
