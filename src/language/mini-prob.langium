@@ -13,7 +13,7 @@ FileImport:
 Decl:
     type=Type names+=ID (',' names+=ID)*;
 
-Func: //main no params (in backend validate)
+Func:
     name=ID '(' params=ParamList? ')' '{'
         (declarations+=Decl ';')*
         body=Block

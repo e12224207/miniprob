@@ -71,7 +71,7 @@ export class MiniProbValidator {
         const program = AstUtils.getContainerOfType(node, isProgram)!;
         const func = AstUtils.getContainerOfType(node, isFunc)!;
 
-        const scopedArrays = [
+        const scopedArrays = [ // use cahcing to also include imports
             ...[...program.declarations, ...func.declarations]
                 .filter(d => d.type.$type === 'IntArray')
                 .flatMap(d => d.names),

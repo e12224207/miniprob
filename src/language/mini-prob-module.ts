@@ -3,6 +3,7 @@ import { createDefaultModule, createDefaultSharedModule, type DefaultSharedModul
 import { MiniProbGeneratedModule, MiniProbGeneratedSharedModule } from './generated/module.js';
 import { MiniProbValidator, registerValidationChecks } from './mini-prob-validator.js';
 import { MiniProbScopeProvider } from './mini-prob-scope-provider.js';
+import { MiniProbScopeComputation } from './min-prob-scope-computation.js';
 
 /**
  * Declaration of custom services - add your own service classes here.
@@ -29,8 +30,9 @@ export const MiniProbModule: Module<MiniProbServices, PartialLangiumServices & M
         MiniProbValidator: () => new MiniProbValidator()        
     },
     references: {
-        ScopeProvider: (services) => new MiniProbScopeProvider(services)
-    }
+        ScopeProvider: (services) => new MiniProbScopeProvider(services),
+        ScopeComputation: (services) => new MiniProbScopeComputation(services)
+    },
 };
 
 /**

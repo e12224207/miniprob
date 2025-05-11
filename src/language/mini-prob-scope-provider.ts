@@ -15,26 +15,27 @@ export class MiniProbScopeProvider extends DefaultScopeProvider {
 
         const container = context.container;
         if (context.property === 'ref' && container) {
-            if (isFuncCall(container)) {
-                const program = AstUtils.getContainerOfType(container, isProgram)!;                
+            const program = AstUtils.getContainerOfType(container, isProgram)!;
+            var includeFileImports = program.fileImports && program.fileImports.length > 0;
+            if (isFuncCall(container)) {                
                 // filter Func for body -> only real Func and not ghost Reference(=current input)
-                let descriptions = program.functions.filter(func => func.body).map(func => this.astNodeDescriptionProvider.createDescription(func, func.name));
+                const descriptions = program.functions.filter(func => func.body).map(func => this.astNodeDescriptionProvider.createDescription(func, func.name));
 
-                if (program.fileImports && program.fileImports.length > 0) {                    
+                //check for imported functions
+                if (includeFileImports) {
                     const document = AstUtils.getDocument(container);
                     const uri = document.uri;
-                    console.log("FileIMport of: " + uri.toString())
-                    descriptions = descriptions.concat(this.getImportedScope(program.fileImports, uri, Func));
+                    console.log("FileImport of: " + uri.toString())
+                    descriptions.push(...this.getImportedScope(program.fileImports, uri, Func));
                 }
-                
+
                 return new MapScope(descriptions);
-            } 
+            }
             else if (isLval(container)) {
                 const enclosingFunction = AstUtils.getContainerOfType(container, isFunc);
                 if (enclosingFunction) {
                     const localDeclarations = enclosingFunction.declarations || [];
-                    const enclosingProgram = AstUtils.getContainerOfType(container, isProgram)!;
-                    const programDeclarations = enclosingProgram.declarations || [];
+                    const programDeclarations = program.declarations || [];
                     const descriptions = [...localDeclarations, ...programDeclarations].flatMap(decl =>
                         decl.names.map(name => this.astNodeDescriptionProvider.createDescription(decl, name))
                     );
@@ -43,10 +44,15 @@ export class MiniProbScopeProvider extends DefaultScopeProvider {
                     if (localFunctionParameter) {
                         descriptions.push(...localFunctionParameter.map(p => this.astNodeDescriptionProvider.createDescription(p, p.name)));
                     }
+                    //check for imported declarations
+                    if (includeFileImports) {
+                        const document = AstUtils.getDocument(container);
+                        const uri = document.uri;
+                        descriptions.push(...this.getImportedScope(program.fileImports, uri, Decl));
+                    }
                     return new MapScope(descriptions);
-                } else { // usage of args and lval outside of functions currently not allowed by grammar                    
-                    const enclosingProgram = AstUtils.getContainerOfType(container, isProgram)!;
-                    const programDeclarations = enclosingProgram.declarations || [];
+                } else { // usage of args and lval outside of functions currently not allowed by grammar
+                    const programDeclarations = program.declarations || [];
                     const descriptions = [...programDeclarations].flatMap(decl =>
                         decl.names.map(name => this.astNodeDescriptionProvider.createDescription(decl, name))
                     );
@@ -62,12 +68,12 @@ export class MiniProbScopeProvider extends DefaultScopeProvider {
     private getImportedScope(fileImports: FileImport[], currentUri: URI, targetNodeType: string): AstNodeDescription[] {
         const importUris = fileImports.map(f => {
             const filePath = posix.join(dirname(currentUri.path), f.file);
-            return currentUri.with({path: filePath}).toString();
+            return currentUri.with({ path: filePath }).toString();
         });
 
         if (targetNodeType === Func) {
             console.log("Import uris for functions" + [...importUris]);
-            var temp = this.indexManager.allElements(Decl, new Set<string>(importUris)).toArray();
+            var temp = this.indexManager.allElements(Func, new Set<string>(importUris)).toArray();
             console.log(temp.length)
             temp.forEach(t => console.log(t.name));
             return temp;
