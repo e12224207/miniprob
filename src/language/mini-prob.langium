@@ -1,7 +1,7 @@
 grammar MiniProb
 
 entry Program:
-    fileImports+=FileImport?
+    (fileImports+=FileImport)*
     probabilisticQuery=PROB_QUERY? // not tested: out of scope
     formula=FORMULA? // not tested: out of scope
     'program:'?
@@ -27,7 +27,7 @@ Block:
 Stmt:
     ( Assignment | Query | Observation | FuncCall | 'throw') ';' | IfThenElse | While | TryCatch;
 
-Lval: // maybe infer array type and nonarray (also in scoping)
+Lval:
     ref=[Decl:ID] ('['index=Expression']')?;
 
 IfThenElse:
@@ -94,7 +94,7 @@ terminal BOOL returns boolean: /(true|false)/;
 terminal PROB_QUERY: /probabilistic query:.*;/;
 terminal FORMULA: /formula\s?=\s?.*;/;
 terminal ID: /(?!(true|false)|[su][1-9][0-9]*)[a-zA-Z_][a-zA-Z0-9_\.\:\~]*/;
-terminal STRING: /"(\\.|[^"\\])*"|'(\\.|[^'\\])*'/;
+terminal STRING returns string: /"(\\.|[^"\\])*"|'(\\.|[^'\\])*'/; // returns string necessary od default?
 terminal INT returns number: /[0-9]+/;
 hidden terminal WS: /\s+/;
 hidden terminal ML_COMMENT: /\/\*[\s\S]*?\*\//;

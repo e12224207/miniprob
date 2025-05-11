@@ -30,7 +30,7 @@ export const MiniProbGrammar = (): Grammar => loadedMiniProbGrammar ?? (loadedMi
               },
               "arguments": []
             },
-            "cardinality": "?"
+            "cardinality": "*"
           },
           {
             "$type": "Assignment",
@@ -2011,6 +2011,10 @@ export const MiniProbGrammar = (): Grammar => loadedMiniProbGrammar ?? (loadedMi
     {
       "$type": "TerminalRule",
       "name": "STRING",
+      "type": {
+        "$type": "ReturnType",
+        "name": "string"
+      },
       "definition": {
         "$type": "RegexToken",
         "regex": "/\\"(\\\\\\\\.|[^\\"\\\\\\\\])*\\"|'(\\\\\\\\.|[^'\\\\\\\\])*'/"

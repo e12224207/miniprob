@@ -14,8 +14,8 @@
             ],
             "sourceMaps": true,
             "outFiles": [
-                "${workspaceFolder}/out/**/*.js"
-            ]
+                "${workspaceFolder}/out/**/*.js",
+            ],
         },
         {
             "name": "Attach to Language Server",
