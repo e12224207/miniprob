@@ -134,11 +134,11 @@ describe('Linking test', () => {
     expect(((document.parseResult.value.functions[0].body.statements[0] as IfThenElse).condition as Lval).ref.error).toBeTruthy();
     expect(
       ((document.parseResult.value.functions[0].body.statements[0] as IfThenElse).condition as Lval).ref.error?.message
-    ).toEqual(expect.stringContaining('Could not resolve reference to Decl named \'flag\''));
+    ).toEqual(expect.stringContaining('Could not resolve reference to DeclOrParam named \'flag\''));
     expect(((document.parseResult.value.functions[0].body.statements[0] as IfThenElse).thenBlock?.statements[0] as Assignment).leftValue.ref.error).toBeTruthy();
     expect(
       ((document.parseResult.value.functions[0].body.statements[0] as IfThenElse).thenBlock?.statements[0] as Assignment).leftValue.ref.error!.message
-    ).toEqual(expect.stringContaining('Could not resolve reference to Decl named \'y\''));
+    ).toEqual(expect.stringContaining('Could not resolve reference to DeclOrParam named \'y\''));
   });
 
   it('should recognize the invalid reference to another local declaration', async () => {
@@ -160,7 +160,7 @@ describe('Linking test', () => {
     expect(((document.parseResult.value.functions[0].body.statements[0] as While).condition as Lval).ref.error).toBeTruthy();
     expect(
       ((document.parseResult.value.functions[0].body.statements[0] as While).condition as Lval).ref.error!.message
-    ).toEqual(expect.stringContaining('Could not resolve reference to Decl named \'flag\''));
+    ).toEqual(expect.stringContaining('Could not resolve reference to DeclOrParam named \'flag\''));
     // check if helper statemetns correctly resolves reference(link)
     expect(((document.parseResult.value.functions[1].body.statements[0] as While).condition as Lval).ref.error).toBeFalsy();
   });
@@ -176,7 +176,7 @@ describe('Linking test', () => {
     expect(((document.parseResult.value.functions[0].body.statements[0] as FuncCall).argumentList!.arguments[0].expression as Lval).ref.error).toBeTruthy();
     expect(
       ((document.parseResult.value.functions[0].body.statements[0] as FuncCall).argumentList!.arguments[0].expression as Lval).ref.error!.message
-    ).toEqual(expect.stringContaining('Could not resolve reference to Decl named \'mainFlag\''));
+    ).toEqual(expect.stringContaining('Could not resolve reference to DeclOrParam named \'mainFlag\''));
     expect((document.parseResult.value.functions[0].body.statements[0] as FuncCall).ref.error).toBeTruthy();
     expect(
       (document.parseResult.value.functions[0].body.statements[0] as FuncCall).ref.error!.message
