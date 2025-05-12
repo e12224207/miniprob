@@ -41,20 +41,21 @@ describe('Parsing Module', () => {
 
 describe('validate based on samples from https://github.com/michiari/POMC/tree/popa/eval', async () => {
   test('test samples', async () => {
-    for(var i = 0; i < sampleFiles.length; i++) {
+    for (var i = 0; i < sampleFiles.length; i++) {
       const filePath = join(__dirname, `../samples/${sampleFiles[i]}`);
-        // Read the file content as a string using UTF-8 encoding
-        const fileContent = readFileSync(filePath, 'utf8');
-        const document = await parse(fileContent);
-        if (checkDocumentValid(document)) {
-          expect(
-            document.diagnostics?.map(diagnosticToString).join('\n')
-          ).toEqual( //empty else block
-            expect.stringContaining(
-              s`Expecting: expecting at least one iteration which starts with one of these possible Token sequences::`
-            )
+      console.log(filePath)
+      // Read the file content as a string using UTF-8 encoding
+      const fileContent = readFileSync(filePath, 'utf8');
+      const document = await parse(fileContent);
+      if (checkDocumentValid(document)) {
+        expect(
+          document.diagnostics?.map(diagnosticToString).join('\n')
+        ).toEqual( //empty else block
+          expect.stringContaining(
+            s`Expecting: expecting at least one iteration which starts with one of these possible Token sequences::`
           )
-        }
+        )
+      }
     }
   })
 });
@@ -92,13 +93,13 @@ describe('validate based on samples from https://github.com/michiari/POMC/tree/p
 // });
 // 
 function checkDocumentValid(document: LangiumDocument): string | undefined {
-    return document.parseResult.parserErrors.length && s`
+  return document.parseResult.parserErrors.length && s`
         Parser errors:
           ${document.parseResult.parserErrors.map(e => e.message).join('\n  ')}
     `
-        || document.parseResult.value === undefined && `ParseResult is 'undefined'.`
-        || !isProgram(document.parseResult.value) && `Root AST object is a ${document.parseResult.value.$type}, expected a '${Program}'.`
-        || undefined;
+    || document.parseResult.value === undefined && `ParseResult is 'undefined'.`
+    || !isProgram(document.parseResult.value) && `Root AST object is a ${document.parseResult.value.$type}, expected a '${Program}'.`
+    || undefined;
 }
 
 function diagnosticToString(d: Diagnostic) {

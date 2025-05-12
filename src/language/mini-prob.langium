@@ -1,5 +1,7 @@
 grammar MiniProb
 
+type DeclOrParam = Decl | Param;
+
 entry Program:
     (fileImports+=FileImport)*
     probabilisticQuery=PROB_QUERY? // not tested: out of scope
@@ -28,7 +30,7 @@ Stmt:
     ( Assignment | Query | Observation | FuncCall | 'throw') ';' | IfThenElse | While | TryCatch;
 
 Lval:
-    ref=[Decl:ID] ('['index=Expression']')?;
+    ref=[DeclOrParam:ID] ('['index=Expression']')?;
 
 IfThenElse:
     'if' '(' condition=Expression ')' '{' thenBlock=Block? '}' 'else' '{' elseBlock=Block? '}';

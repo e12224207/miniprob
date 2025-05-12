@@ -15,6 +15,7 @@ export class MiniProbScopeComputation extends DefaultScopeComputation {
     
     const program = document.parseResult.value as Program;
 
+    //export top level declarations
     for (const decl of program.declarations ?? []) {
       for (const name of decl.names) {
         exports.push(

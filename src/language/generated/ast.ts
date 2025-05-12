@@ -64,6 +64,14 @@ export type MiniProbKeywordNames =
 
 export type MiniProbTokenNames = MiniProbTerminalNames | MiniProbKeywordNames;
 
+export type DeclOrParam = Decl | Param;
+
+export const DeclOrParam = 'DeclOrParam';
+
+export function isDeclOrParam(item: unknown): item is DeclOrParam {
+    return reflection.isInstance(item, DeclOrParam);
+}
+
 export type Expression = BinaryExpression | BoolLiteral | IntLiteral | LogicalNegation | Lval | ProbabilisticAssignment;
 
 export const Expression = 'Expression';
@@ -301,7 +309,7 @@ export interface Lval extends AstNode {
     readonly $container: Arg | Assignment | BinaryExpression | Distribution | IfThenElse | LogicalNegation | Lval | Observation | ProbChoice | ProbabilisticAssignment | While;
     readonly $type: 'Lval';
     index?: Expression;
-    ref: Reference<Decl>;
+    ref: Reference<DeclOrParam>;
 }
 
 export const Lval = 'Lval';
@@ -447,6 +455,7 @@ export type MiniProbAstType = {
     Block: Block
     BoolLiteral: BoolLiteral
     Decl: Decl
+    DeclOrParam: DeclOrParam
     Distribution: Distribution
     Expression: Expression
     FileImport: FileImport
@@ -475,7 +484,7 @@ export type MiniProbAstType = {
 export class MiniProbAstReflection extends AbstractAstReflection {
 
     getAllTypes(): string[] {
-        return [Arg, ArgList, Assignment, BinaryExpression, Block, BoolLiteral, Decl, Distribution, Expression, FileImport, Func, FuncCall, IfThenElse, IntArray, IntLiteral, IntType, IntegerLiteral, LogicalNegation, Lval, Observation, Param, ParamList, ProbChoice, ProbabilisticAssignment, Program, Query, Stmt, TryCatch, Type, While];
+        return [Arg, ArgList, Assignment, BinaryExpression, Block, BoolLiteral, Decl, DeclOrParam, Distribution, Expression, FileImport, Func, FuncCall, IfThenElse, IntArray, IntLiteral, IntType, IntegerLiteral, LogicalNegation, Lval, Observation, Param, ParamList, ProbChoice, ProbabilisticAssignment, Program, Query, Stmt, TryCatch, Type, While];
     }
 
     protected override computeIsSubtype(subtype: string, supertype: string): boolean {
@@ -497,6 +506,10 @@ export class MiniProbAstReflection extends AbstractAstReflection {
             case ProbabilisticAssignment: {
                 return this.isSubtype(Expression, supertype);
             }
+            case Decl:
+            case Param: {
+                return this.isSubtype(DeclOrParam, supertype);
+            }
             case IntArray: {
                 return this.isSubtype(IntType, supertype);
             }
@@ -516,7 +529,7 @@ export class MiniProbAstReflection extends AbstractAstReflection {
                 return Func;
             }
             case 'Lval:ref': {
-                return Decl;
+                return DeclOrParam;
             }
             default: {
                 throw new Error(`${referenceId} is not a valid reference id.`);

@@ -8,12 +8,12 @@ import { MiniProbServices } from "../mini-prob-module.js";
 export class MiniProbScopeProvider extends DefaultScopeProvider {
 
     private astNodeDescriptionProvider: AstNodeDescriptionProvider;
-    //private readonly descriptionCache: SharedMiniProbCache;
+    private readonly descriptionCache: SharedMiniProbCache;
     constructor(services: MiniProbServices) {
-        super(services);        
+        super(services);
         //get some helper services
         this.astNodeDescriptionProvider = services.workspace.AstNodeDescriptionProvider;
-        //this.descriptionCache = services.caching.MiniProbCache;
+        this.descriptionCache = services.caching.MiniProbCache;
     }
     override getScope(context: ReferenceInfo): Scope {
 
@@ -21,7 +21,7 @@ export class MiniProbScopeProvider extends DefaultScopeProvider {
         if (context.property === 'ref' && container) {
             const program = AstUtils.getContainerOfType(container, isProgram)!;
             var includeFileImports = program.fileImports && program.fileImports.length > 0;
-            if (isFuncCall(container)) {                
+            if (isFuncCall(container)) {
                 // filter Func for body -> only real Func and not ghost Reference(=current input)
                 const descriptions = program.functions.filter(func => func.body).map(func => this.astNodeDescriptionProvider.createDescription(func, func.name));
 
@@ -29,7 +29,6 @@ export class MiniProbScopeProvider extends DefaultScopeProvider {
                 if (includeFileImports) {
                     const document = AstUtils.getDocument(container);
                     const uri = document.uri;
-                    console.log("FileImport of: " + uri.toString())
                     descriptions.push(...this.getImportedScope(program.fileImports, uri, Func));
                 }
 
@@ -74,14 +73,27 @@ export class MiniProbScopeProvider extends DefaultScopeProvider {
             const filePath = posix.join(dirname(currentUri.path), f.file);
             return currentUri.with({ path: filePath }).toString();
         });
+        // TODO make sure each uri's document is parsed at least once otherwise they are not indexed and not found
 
-        if (targetNodeType === Func) {            
-            var temp = this.indexManager.allElements(Func, new Set<string>(importUris)).toArray();
-            return temp;
+        const importKey = 'imported-';
+        if (targetNodeType === Func) {
+            const importedFuncDescriptions = this.descriptionCache.get(currentUri, importKey + targetNodeType,
+                () => new MapScope(this.indexManager.allElements(Func, new Set<string>(importUris))));
+            return importedFuncDescriptions.getAllElements().toArray();
         } else if (targetNodeType === Decl) {
-            var temp = this.indexManager.allElements(Decl, new Set<string>(importUris)).filter(decl => !decl.path.includes('function')).toArray();
-            return temp;
+            var temp = this.indexManager.allElements(Decl, new Set<string>(importUris));
+            const importedDeclDescriptions = this.descriptionCache.get(currentUri, importKey + targetNodeType,
+                () => new MapScope(temp)); //no extra filter necessary ?
+            return importedDeclDescriptions.getAllElements().toArray();
         }
+
+        // if (targetNodeType === Func) {
+        //     var temp = this.indexManager.allElements(Func, new Set<string>(importUris)).toArray();
+        //     return temp;
+        // } else if (targetNodeType === Decl) {
+        //     var temp = this.indexManager.allElements(Decl, new Set<string>(importUris)).filter(decl => !decl.path.includes('function')).toArray();
+        //     return temp;
+        // }
 
         return [];
     }

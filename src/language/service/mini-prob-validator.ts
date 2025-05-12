@@ -1,5 +1,5 @@
 import { AstNodeDescription, AstUtils, type ValidationAcceptor, type ValidationChecks } from 'langium';
-import { isLval, isProgram, isFunc, Lval, Decl, type MiniProbAstType, type Param, Func, FuncCall, ProbabilisticAssignment, ProbChoice, IntLiteral } from '../generated/ast.js'; //Person from here
+import { isLval, isProgram, isFunc, Lval, Decl, type MiniProbAstType, type Param, Func, FuncCall, ProbabilisticAssignment, ProbChoice, IntLiteral, isDecl, isParam } from '../generated/ast.js'; //Person from here
 import type { MiniProbServices } from '../mini-prob-module.js';
 import { SharedMiniProbCache } from './mini-prob-caching.js';
 
@@ -32,8 +32,10 @@ export class MiniProbValidator {
     }
 
     checkFunctionCalls(node: FuncCall, accept: ValidationAcceptor) {
-        const targetFunc = AstUtils.getContainerOfType(node, isProgram)!.functions.find(func => func.name === node.ref.$refText);
-        if (targetFunc && node.argumentList?.arguments.length != targetFunc.params?.parameters.length) {
+
+        var refNode = node.ref.ref;
+        var noMatchParams = refNode?.params?.parameters.length != node.argumentList?.arguments.length;
+        if (noMatchParams) {
             accept('error', 'Number of parameters does not match.', {
                 node,
                 property: 'argumentList'
@@ -61,7 +63,7 @@ export class MiniProbValidator {
             });
         }
 
-        var numerator = node.numerator as IntLiteral;
+        var numerator = node.numerator as IntLiteral; //TODO further unpacking of inltieral (lval, expression)
         var denominator = node.denominator as IntLiteral;
         var e = numerator.literal.value / denominator.literal.value
         if (e < 0) {
@@ -80,8 +82,18 @@ export class MiniProbValidator {
         const program = AstUtils.getContainerOfType(node, isProgram)!;
         const func = AstUtils.getContainerOfType(node, isFunc)!;
 
-        const importKey = AstUtils.getDocument(node).uri.path + `_imported-${Decl}`;
-
+        const refNode = node.ref.ref;
+        var referenceType = '';
+        switch (refNode?.$type) {
+            case 'Decl':
+                referenceType = refNode!.type.$type;
+                break;
+            case 'Param':
+                referenceType = refNode!.type.$type;
+                break;
+            default:
+                break;
+        }
 
         const scopedArrays = [ // use cahcing to also include imports
             ...[...program.declarations, ...func.declarations]
@@ -92,32 +104,23 @@ export class MiniProbValidator {
                 .map(p => p.name)
         ];
 
+        console.log(referenceType)
+
         if (node.index) {
             // handle index access of non array type
-            if (!scopedArrays.includes(node.ref.$refText)) {
-                const importedRef = this.descriptionCache.get(importKey)?.getElement(node.ref.$refText);
-                if (!importedRef || importedRef.type !== 'IntArray') {
-                    accept('error', 'This is not an array type.', {
-                        node,
-                        property: 'index'
-                    });
-                }
+            if (referenceType !== 'IntArray') {
+                accept('error', 'This is not an array type.', {
+                    node,
+                    property: 'ref'
+                });
             }
         } else {
             //handle missing index for array type / no arr1 = arr2 allowed; index must be present when referencing an array
-            if (scopedArrays.includes(node.ref.$refText)) {
+            if (referenceType === 'IntArray') {
                 accept('error', 'Missing indexed access of array type', {
                     node,
-                    property: 'index'
+                    property: 'ref'
                 });
-                return;
-            }
-            const importedRef = this.descriptionCache.get(importKey)?.getElement(node.ref.$refText);
-            if (importedRef && importedRef.type === 'IntArray') {
-                accept('error', 'Missing indexed access of imported array type', {
-                    node,
-                    property: 'index'
-                })
             }
 
         }

@@ -11,6 +11,29 @@ export const MiniProbGrammar = (): Grammar => loadedMiniProbGrammar ?? (loadedMi
   "$type": "Grammar",
   "isDeclared": true,
   "name": "MiniProb",
+  "types": [
+    {
+      "$type": "Type",
+      "name": "DeclOrParam",
+      "type": {
+        "$type": "UnionType",
+        "types": [
+          {
+            "$type": "SimpleType",
+            "typeRef": {
+              "$ref": "#/rules@2"
+            }
+          },
+          {
+            "$type": "SimpleType",
+            "typeRef": {
+              "$ref": "#/rules@15"
+            }
+          }
+        ]
+      }
+    }
+  ],
   "rules": [
     {
       "$type": "ParserRule",
@@ -461,7 +484,7 @@ export const MiniProbGrammar = (): Grammar => loadedMiniProbGrammar ?? (loadedMi
             "terminal": {
               "$type": "CrossReference",
               "type": {
-                "$ref": "#/rules@2"
+                "$ref": "#/types@0"
               },
               "terminal": {
                 "$type": "RuleCall",
@@ -2071,6 +2094,5 @@ export const MiniProbGrammar = (): Grammar => loadedMiniProbGrammar ?? (loadedMi
   "hiddenTokens": [],
   "imports": [],
   "interfaces": [],
-  "types": [],
   "usedGrammars": []
 }`));

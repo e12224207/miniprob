@@ -38,7 +38,7 @@ export const MiniProbModule: Module<MiniProbServices, PartialLangiumServices & M
         ScopeComputation: (services) => new MiniProbScopeComputation(services),        
     },
     caching: {
-        MiniProbCache: () => new SharedMiniProbCache()
+        MiniProbCache: (services) => new SharedMiniProbCache(services)
     }
 };
 
