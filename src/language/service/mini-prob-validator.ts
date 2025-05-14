@@ -1,7 +1,10 @@
-import { AstNodeDescription, AstUtils, type ValidationAcceptor, type ValidationChecks } from 'langium';
-import { isLval, isProgram, isFunc, Lval, Decl, type MiniProbAstType, type Param, Func, FuncCall, ProbabilisticAssignment, ProbChoice, IntLiteral, isDecl, isParam } from '../generated/ast.js'; //Person from here
+import { AstNode, AstNodeDescription, AstUtils, type ValidationAcceptor, type ValidationChecks } from 'langium';
+import { isLval, isProgram, isFunc, Lval, Decl, type MiniProbAstType, type Param, Func, FuncCall, ProbabilisticAssignment, ProbChoice, IntLiteral, isDecl, isParam, Assignment } from '../generated/ast.js'; //Person from here
 import type { MiniProbServices } from '../mini-prob-module.js';
 import { SharedMiniProbCache } from './mini-prob-caching.js';
+import { isErrorType, TypeDescription, typeToString } from '../type-system/description.js';
+import { inferType } from '../type-system/infer.js';
+import { isCompatible } from '../type-system/compatible.js';
 
 /**
  * Register custom validation checks.
@@ -13,7 +16,8 @@ export function registerValidationChecks(services: MiniProbServices) {
         Lval: validator.checkArrayType,
         FuncCall: validator.checkFunctionCalls,
         Func: validator.checkMainFunction,
-        ProbChoice: validator.checkProbabilisticAssignment
+        ProbChoice: validator.checkProbabilisticAssignment,
+        Assignment: validator.checkAssignments
     };
     registry.register(checks, validator);
 }
@@ -29,6 +33,38 @@ export class MiniProbValidator {
      */
     constructor(services: MiniProbServices) {
         this.descriptionCache = services.caching.MiniProbCache;
+    }
+
+    checkAssignments(node: Assignment, accept: ValidationAcceptor) {
+        var map = this.getTypeCache();
+        const leftType = inferType(node.leftValue, map);
+        var rightType;
+        if (node.expression) {
+            rightType = inferType(node.expression, map);
+        } else {
+            rightType = inferType(node.distribution, map);
+        }
+
+        var skipAssignErr = false;
+        if (isErrorType(leftType)) {
+            skipAssignErr = true;
+            accept('error', leftType.message, {
+                node: leftType.source ?? node                
+            })
+        }
+        if (isErrorType(rightType)) {
+            skipAssignErr = true;
+            accept('error', rightType.message, {
+                node: rightType.source ?? node                                
+            })
+        }
+
+        if (!skipAssignErr && !isCompatible(leftType, rightType)) {
+            accept('error', `Type ${typeToString(rightType)} is not assignable to ${typeToString(leftType)}.`, {
+                node,
+                property: 'expression'
+            })
+        }
     }
 
     checkFunctionCalls(node: FuncCall, accept: ValidationAcceptor) {
@@ -79,6 +115,9 @@ export class MiniProbValidator {
 
     checkArrayType(node: Lval, accept: ValidationAcceptor) {
 
+        if (node.ref.error)
+            return;
+
         const program = AstUtils.getContainerOfType(node, isProgram)!;
         const func = AstUtils.getContainerOfType(node, isFunc)!;
 
@@ -94,17 +133,6 @@ export class MiniProbValidator {
             default:
                 break;
         }
-
-        const scopedArrays = [ // use cahcing to also include imports
-            ...[...program.declarations, ...func.declarations]
-                .filter(d => d.type.$type === 'IntArray')
-                .flatMap(d => d.names),
-            ...(func.params?.parameters ?? [])
-                .filter(p => p.type.$type === 'IntArray')
-                .map(p => p.name)
-        ];
-
-        console.log(referenceType)
 
         if (node.index) {
             // handle index access of non array type
@@ -126,4 +154,7 @@ export class MiniProbValidator {
         }
     }
 
+    private getTypeCache(): Map<AstNode, TypeDescription> {
+        return new Map();
+    }
 }

@@ -3,7 +3,7 @@ import { EmptyFileSystem, type LangiumDocument } from "langium";
 import { expandToString as s } from "langium/generate";
 import { clearDocuments, parseHelper } from "langium/test";
 import { createMiniProbServices } from "../../src/language/mini-prob-module.js";
-import { Assignment, BinaryExpression, FuncCall, IfThenElse, Lval, Program, While, isProgram } from "../../src/language/generated/ast.js";
+import { Assignment, BinaryExpression, Decl, FuncCall, IfThenElse, Lval, Program, While, isProgram } from "../../src/language/generated/ast.js";
 
 let services: ReturnType<typeof createMiniProbServices>;
 let parse: ReturnType<typeof parseHelper<Program>>;
@@ -44,14 +44,14 @@ describe('Linking test', () => {
     const localRefContainer = document.parseResult.value.functions[0].body.statements;
     expect((localRefContainer[0] as Assignment).leftValue.ref.error).toBeFalsy();
     expect((localRefContainer[0] as Assignment).leftValue.ref.ref).toBeTruthy();
-    expect((localRefContainer[0] as Assignment).leftValue.ref.ref!.names[0]).toBe(globalDeclarations[0].names[0]);
+    expect(((localRefContainer[0] as Assignment).leftValue.ref.ref! as Decl).names[0]).toBe(globalDeclarations[0].names[0]);
     // _common assignment
     expect((localRefContainer[1] as Assignment).leftValue.ref.error).toBeFalsy();
     expect((localRefContainer[1] as Assignment).leftValue.ref.ref).toBeTruthy();
-    expect((localRefContainer[1] as Assignment).leftValue.ref.ref!.names[0]).toBe(globalDeclarations[1].names[0]);
+    expect(((localRefContainer[1] as Assignment).leftValue.ref.ref! as Decl).names[0]).toBe(globalDeclarations[1].names[0]);
     expect((((localRefContainer[1] as Assignment).expression as BinaryExpression).left as Lval).ref.error).toBeFalsy();
     expect((((localRefContainer[1] as Assignment).expression as BinaryExpression).left as Lval).ref.ref).toBeTruthy();
-    expect((((localRefContainer[1] as Assignment).expression as BinaryExpression).left as Lval).ref.ref!.names[0]).toBe(globalDeclarations[1].names[0]);
+    expect(((((localRefContainer[1] as Assignment).expression as BinaryExpression).left as Lval).ref.ref! as Decl).names[0]).toBe(globalDeclarations[1].names[0]);
   });
 
   it('should correctly link local functions statements to local declarations', async () => {
@@ -70,14 +70,14 @@ describe('Linking test', () => {
     const localRefContainer = document.parseResult.value.functions[0].body.statements;
     expect((localRefContainer[0] as Assignment).leftValue.ref.error).toBeFalsy();
     expect((localRefContainer[0] as Assignment).leftValue.ref.ref).toBeTruthy();
-    expect((localRefContainer[0] as Assignment).leftValue.ref.ref!.names[0]).toBe(declarations[0].names[0]);
+    expect(((localRefContainer[0] as Assignment).leftValue.ref.ref! as Decl).names[0]).toBe(declarations[0].names[0]);
     // _common assignment
     expect((localRefContainer[1] as Assignment).leftValue.ref.error).toBeFalsy();
     expect((localRefContainer[1] as Assignment).leftValue.ref.ref).toBeTruthy();
-    expect((localRefContainer[1] as Assignment).leftValue.ref.ref!.names[0]).toBe(declarations[1].names[0]);
+    expect(((localRefContainer[1] as Assignment).leftValue.ref.ref! as Decl).names[0]).toBe(declarations[1].names[0]);
     expect((((localRefContainer[1] as Assignment).expression as BinaryExpression).left as Lval).ref.error).toBeFalsy();
     expect((((localRefContainer[1] as Assignment).expression as BinaryExpression).left as Lval).ref.ref).toBeTruthy();
-    expect((((localRefContainer[1] as Assignment).expression as BinaryExpression).left as Lval).ref.ref!.names[0]).toBe(declarations[1].names[0]);
+    expect(((((localRefContainer[1] as Assignment).expression as BinaryExpression).left as Lval).ref.ref! as Decl).names[0]).toBe(declarations[1].names[0]);
   });
 
   it('should correctly link functions calls to existing functions', async () => {
@@ -112,7 +112,7 @@ describe('Linking test', () => {
     expect(((document.parseResult.value.functions[0].body.statements[0] as FuncCall).argumentList!.arguments[0].expression as Lval).ref.error).toBeFalsy();
     expect(((document.parseResult.value.functions[0].body.statements[0] as FuncCall).argumentList!.arguments[0].expression as Lval).ref.ref).toBeTruthy();
     expect(
-      ((document.parseResult.value.functions[0].body.statements[0] as FuncCall).argumentList!.arguments[0].expression as Lval).ref.ref!.names[0]
+      (((document.parseResult.value.functions[0].body.statements[0] as FuncCall).argumentList!.arguments[0].expression as Lval).ref.ref! as Decl).names[0]
     ).toBe(document.parseResult.value.functions[0].declarations[0].names[0]);
     expect((document.parseResult.value.functions[0].body.statements[0] as FuncCall).ref.error).toBeFalsy();
     expect((document.parseResult.value.functions[0].body.statements[0] as FuncCall).ref.ref).toBeTruthy();
