@@ -1,5 +1,5 @@
 import { AstNode, AstNodeDescription, AstUtils, type ValidationAcceptor, type ValidationChecks } from 'langium';
-import { isLval, isProgram, isFunc, Lval, Decl, type MiniProbAstType, type Param, Func, FuncCall, ProbabilisticAssignment, ProbChoice, IntLiteral, isDecl, isParam, Assignment, Distribution, BinaryExpression, LogicalNegation, IntegerLiteral } from '../generated/ast.js'; //Person from here
+import { isLval, isProgram, isFunc, Lval, Decl, type MiniProbAstType, type Param, Func, FuncCall, ProbabilisticAssignment, ProbChoice, IntLiteral, isDecl, isParam, Assignment, Distribution, BinaryExpression, LogicalNegation, IntegerLiteral, Program } from '../generated/ast.js'; //Person from here
 import type { MiniProbServices } from '../mini-prob-module.js';
 import { SharedMiniProbCache } from './mini-prob-caching.js';
 import { DistributionTypeDescription, ErrorType, IntegerTypeDescription, isErrorType, isIntegerType, TypeDescription, typeToString } from '../type-system/description.js';
@@ -16,13 +16,14 @@ export function registerValidationChecks(services: MiniProbServices) {
     const checks: ValidationChecks<MiniProbAstType> = {
         Lval: validator.checkArrayAccess,
         FuncCall: validator.checkFunctionCalls,
-        Func: validator.checkMainFunction,
+        Func: validator.checkFunctionDefinitions,
+        Decl: validator.checkDeclarationIds,
         ProbChoice: validator.checkProbabilisticChoices,
         Assignment: validator.checkAssignments,
         Distribution: validator.checkDistributions,
         BinaryExpression: validator.checkBinaryExpressions,
         LogicalNegation: validator.checkUnaryExpressions,
-        IntegerLiteral: validator.checkIntegerLiteral
+        IntegerLiteral: validator.checkIntegerLiteral,
     };
     registry.register(checks, validator);
 }
@@ -152,11 +153,19 @@ export class MiniProbValidator {
         }
     }
 
-    checkMainFunction(node: Func, accept: ValidationAcceptor) {
+    checkFunctionDefinitions(node: Func, accept: ValidationAcceptor) {
         if (node.name === 'main' && node.params) {
             accept('error', 'Function \'main\' cannot have any arguments.', {
                 node,
                 property: 'params'
+            });
+        }
+
+        const functionNames = AstUtils.getContainerOfType(node, isProgram)!.functions.filter(func => func !== node).map(func => func.name);
+        if (functionNames.includes(node.name)) {
+            accept('error', `Function with name ${node.name} already exists`, {
+                node,
+                property: 'name'
             });
         }
     }
@@ -342,6 +351,51 @@ export class MiniProbValidator {
                 'No spaces are allowed in integer literals',
                 { node }
             );
+        }
+    }
+
+    checkDeclarationIds(node: Decl, accept: ValidationAcceptor) {
+        const topLevelNames = AstUtils.getContainerOfType(node, isProgram)
+            ?.declarations
+            .filter(decl => decl !== node)
+            .flatMap(decl => decl.names)
+            ?? [];
+
+        // Gather all other names in the same function (if any) inline
+        const localNames = AstUtils.getContainerOfType(node, isFunc)
+            ?.declarations
+            .filter(decl => decl !== node)
+            .flatMap(decl => decl.names)
+            ?? [];
+
+        const { hasDup } = node.names.reduce(
+            (acc, name, index) => {
+                if (acc.seen.has(name)) {
+                    acc.hasDup = index;
+                } else {
+                    acc.seen.add(name);
+                }
+                return acc;
+            },
+            { seen: new Set<string>(), hasDup: -1 }
+        );
+        if (hasDup) {
+            accept(
+                'error',
+                'Identifier is already declared here',
+                { node, property: 'names', index: hasDup }
+            );
+        }
+        const forbidden = new Set<string>([...topLevelNames, ...localNames]);
+        for (let i = 0; i < node.names.length; i++) {
+            const name = node.names[i];
+            if (forbidden.has(name)) {
+                accept(
+                    'error',
+                    `Identifier '${name}' is already declared`,
+                    { node, property: 'names', index: i }
+                );
+            }
         }
     }
 
