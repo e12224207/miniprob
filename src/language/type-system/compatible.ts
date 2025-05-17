@@ -1,4 +1,4 @@
-import { isBooleanType, isDistributionType, isIntegerType, TypeDescription } from "./description.js";
+import { IntegerTypeDescription, isArrayIntegerType, isBooleanType, isDistributionType, isIntegerType, TypeDescription } from "./description.js";
 
 /**
  * Compare two TypeDescriptions by their `.$type` field,
@@ -11,15 +11,23 @@ export function isCompatible(
     left: TypeDescription,
     right: TypeDescription
 ): boolean {
+    
     // If left is an integer but right isn't a distribution,
     // do the extra width/signed check
     if (!isDistributionType(right) && isIntegerType(left) && isIntegerType(right)) {
         // require same sign and at least as many bits on the left
-        if (left.signed !== right.signed || left.width < right.width) {
+        if ((left.signed ? left.width-1 : left.width) < (right.signed ? right.width-1 : right.width)) {
             return false;
         }
     }
-    //handle 0 and 1 assingments to boolean types
+    if (isArrayIntegerType(left) && isArrayIntegerType(right)) {
+        var leftTypeOf = left.elementType as IntegerTypeDescription;
+        var rightTypeOf = right.elementType as IntegerTypeDescription;
+        if ((leftTypeOf.signed ? leftTypeOf.width-1 : leftTypeOf.width) < (rightTypeOf.signed ? rightTypeOf.width-1 : rightTypeOf.width)) {
+            return false;
+        }
+    }
+    //handle extra 0 and 1 assingments to boolean types
     if (isBooleanType(left) && isIntegerType(right)) {
         if (!right.signed && right.width === 1) {
             return true;

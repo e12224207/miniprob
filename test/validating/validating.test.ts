@@ -48,6 +48,7 @@ describe('validate based on samples from https://github.com/michiari/POMC/tree/p
       const fileContent = readFileSync(filePath, 'utf8');
       const document = await parse(fileContent);
       if (checkDocumentValid(document)) {
+        console.log('CheckDocumentValid is not undefined');
         expect(
           document.diagnostics?.map(diagnosticToString).join('\n')
         ).toEqual( //empty else block

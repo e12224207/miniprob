@@ -75,9 +75,9 @@ export function isArrayIntegerType(item: TypeDescription): item is ArrayTypeDesc
 export interface DistributionTypeDescription {
     readonly $type: "integer"
     readonly distribution?: Distribution
-    readonly args?: TypeDescription[]
+    readonly args: TypeDescription[]
 }
-export function createDistributionType(literal?: Distribution, args?: TypeDescription[]): DistributionTypeDescription {
+export function createDistributionType(args: TypeDescription[], literal?: Distribution): DistributionTypeDescription {
     return {
         $type: 'integer',
         distribution: literal,
