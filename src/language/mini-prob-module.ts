@@ -5,6 +5,7 @@ import { MiniProbValidator, registerValidationChecks } from './service/mini-prob
 import { MiniProbScopeProvider } from './service/mini-prob-scope-provider.js';
 import { MiniProbScopeComputation } from './service/min-prob-scope-computation.js';
 import { SharedMiniProbCache } from './service/mini-prob-caching.js';
+//import { MiniProbCompletionProvider } from './service/mini-prob-completion.js';
 
 /**
  * Declaration of custom services - add your own service classes here.
@@ -39,7 +40,10 @@ export const MiniProbModule: Module<MiniProbServices, PartialLangiumServices & M
     },
     caching: {
         MiniProbCache: (services) => new SharedMiniProbCache(services)
-    }
+    },
+    // lsp: {
+    //     CompletionProvider: (services) => new MiniProbCompletionProvider(services)
+    // }
 };
 
 /**

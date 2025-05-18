@@ -1,5 +1,5 @@
-import { AstNodeDescription, AstNodeDescriptionProvider, AstUtils, DefaultScopeProvider, LangiumCoreServices, MapScope, ReferenceInfo, Scope, URI, DefaultIndexManager, Stream, stream } from "langium";
-import { Decl, FileImport, Func, FuncCall, isArg, isDecl, isFunc, isFuncCall, isLval, isProgram, Program } from "../generated/ast.js";
+import { AstNodeDescription, AstNodeDescriptionProvider, AstUtils, DefaultScopeProvider, LangiumCoreServices, MapScope, ReferenceInfo, Scope, URI, DefaultIndexManager, Stream, stream, AstNode } from "langium";
+import { Decl, FileImport, Func, FuncCall, isArg, isBlock, isDecl, isFunc, isFuncCall, isLval, isProgram, Program } from "../generated/ast.js";
 import { dirname, join, posix } from "path";
 import { SharedMiniProbCache } from "./mini-prob-caching.js";
 import { MiniProbServices } from "../mini-prob-module.js";
@@ -20,13 +20,30 @@ export class MiniProbScopeProvider extends DefaultScopeProvider {
         const container = context.container;
         if (context.property === 'ref' && container) {
             const program = AstUtils.getContainerOfType(container, isProgram)!;
+            // filter Func for body -> only real Func and not ghost Reference(=current input)
+            const programFunctions = program.functions.filter(this.isRealFunc);
             var includeFileImports = program.fileImports && program.fileImports.length > 0;
+
             if (isFuncCall(container)) {
                 const descriptions = this.descriptionCache.get(AstUtils.getDocument(container).uri, Func, () =>
-                    // filter Func for body -> only real Func and not ghost Reference(=current input)
-                    new MapScope(program.functions.filter(func => func.body)
-                        .map(func => this.astNodeDescriptionProvider.createDescription(func, func.name)))
+                    new MapScope(programFunctions.map(func => this.astNodeDescriptionProvider.createDescription(func, func.name)))
                 ).getAllElements();
+
+                //include local Declarations for code-completion
+                //const ghostFunc = AstUtils.getContainerOfType(container, isFunc); //isFunc this gets me the ghost reference node
+                //You’re running into the “ghost” functions because Langium’s default scope provider will happily invent a placeholder Func for every unresolved identifier—so when you do
+
+                //include declarations from first unclosed function, generally the one in which ipnut is happening.
+                var enclosingFunc = programFunctions.find(func => {
+                    const text = func.$cstNode?.text ?? '';
+                    const opens = (text.match(/{/g) || []).length;
+                    const closes = (text.match(/}/g) || []).length;
+                    return closes < opens;
+                });
+                var localDeclarationsDescriptions: AstNodeDescription[]  = [];
+                if (enclosingFunc) {
+                    localDeclarationsDescriptions = enclosingFunc.declarations.flatMap(decl => decl.names.map(n => this.astNodeDescriptionProvider.createDescription(decl, n)));
+                }
 
                 //check for imported functions
                 var importedDescriptions: Stream<AstNodeDescription> = stream();
@@ -36,7 +53,7 @@ export class MiniProbScopeProvider extends DefaultScopeProvider {
                     importedDescriptions = this.getImportedScope(program.fileImports, uri, Func);
                 }
 
-                return new MapScope(stream(descriptions, importedDescriptions));
+                return new MapScope(stream(descriptions, importedDescriptions, localDeclarationsDescriptions));
             }
             else if (isLval(container)) {
                 const document = AstUtils.getDocument(container);
@@ -102,5 +119,10 @@ export class MiniProbScopeProvider extends DefaultScopeProvider {
         }
 
         return stream();
+    }
+
+    //helper functions
+    private isRealFunc(node: AstNode | undefined): node is Func {
+        return isFunc(node) && (node as Func).body !== undefined;
     }
 }

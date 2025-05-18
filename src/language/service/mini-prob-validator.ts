@@ -1,405 +1,471 @@
-import { AstNode, AstNodeDescription, AstUtils, type ValidationAcceptor, type ValidationChecks } from 'langium';
-import { isLval, isProgram, isFunc, Lval, Decl, type MiniProbAstType, type Param, Func, FuncCall, ProbabilisticAssignment, ProbChoice, IntLiteral, isDecl, isParam, Assignment, Distribution, BinaryExpression, LogicalNegation, IntegerLiteral, Program } from '../generated/ast.js'; //Person from here
+import {
+  AstNode,
+  AstNodeDescription,
+  AstUtils,
+  type ValidationAcceptor,
+  type ValidationChecks
+} from 'langium';
+import {
+  isLval,
+  isProgram,
+  isFunc,
+  Lval,
+  Decl,
+  type MiniProbAstType,
+  type Param,
+  Func,
+  FuncCall,
+  ProbabilisticAssignment,
+  ProbChoice,
+  IntLiteral,
+  isDecl,
+  isParam,
+  Assignment,
+  Distribution,
+  BinaryExpression,
+  LogicalNegation,
+  IntegerLiteral,
+  Program
+} from '../generated/ast.js';
 import type { MiniProbServices } from '../mini-prob-module.js';
 import { SharedMiniProbCache } from './mini-prob-caching.js';
-import { DistributionTypeDescription, ErrorType, IntegerTypeDescription, isErrorType, isIntegerType, TypeDescription, typeToString } from '../type-system/description.js';
+import {
+  DistributionTypeDescription,
+  ErrorType,
+  IntegerTypeDescription,
+  isErrorType,
+  isIntegerType,
+  TypeDescription,
+  typeToString
+} from '../type-system/description.js';
 import { inferType } from '../type-system/infer.js';
 import { isCompatible } from '../type-system/compatible.js';
 import { isLegalOperation } from '../type-system/operation.js';
 
 /**
- * Register custom validation checks.
+ * Register all custom validation routines with Langium’s ValidationRegistry.
+ *
+ * @param services   The injected MiniProbServices, which includes the validator and registry.
  */
 export function registerValidationChecks(services: MiniProbServices) {
-    const registry = services.validation.ValidationRegistry;
-    const validator = services.validation.MiniProbValidator;
-    const checks: ValidationChecks<MiniProbAstType> = {
-        Lval: validator.checkArrayAccess,
-        FuncCall: validator.checkFunctionCalls,
-        Func: validator.checkFunctionDefinitions,
-        Decl: validator.checkDeclarationIds,
-        ProbChoice: validator.checkProbabilisticChoices,
-        Assignment: validator.checkAssignments,
-        Distribution: validator.checkDistributions,
-        BinaryExpression: validator.checkBinaryExpressions,
-        LogicalNegation: validator.checkUnaryExpressions,
-        IntegerLiteral: validator.checkIntegerLiteral,
-    };
-    registry.register(checks, validator);
+  const registry = services.validation.ValidationRegistry;
+  const validator = services.validation.MiniProbValidator;
+  const checks: ValidationChecks<MiniProbAstType> = {
+    Lval: validator.checkArrayAccess,
+    FuncCall: validator.checkFunctionCalls,
+    Func: validator.checkFunctionDefinitions,
+    Decl: validator.checkDeclarationIds,
+    ProbChoice: validator.checkProbabilisticChoices,
+    Assignment: validator.checkAssignments,
+    Distribution: validator.checkDistributions,
+    BinaryExpression: validator.checkBinaryExpressions,
+    LogicalNegation: validator.checkUnaryExpressions,
+    IntegerLiteral: validator.checkIntegerLiteral,
+  };
+  registry.register(checks, validator);
 }
 
 /**
- * Implementation of custom validations.
+ * Core validator class implementing custom checks over the MiniProb AST.
+ * Uses a shared cache to avoid recomputing type descriptions.
  */
 export class MiniProbValidator {
 
-    private readonly descriptionCache: SharedMiniProbCache;
-    /**
-     *
-     */
-    constructor(services: MiniProbServices) {
-        this.descriptionCache = services.caching.MiniProbCache;
-    }
-    //TODO check id unique
-    //TODO? check if ref param is lval and no expression (warning)
-    //TODO? statically evaluate operations warning
-    //TODO? check Distribution arg1 > arg2
+  /** Shared cache for storing type descriptions across validations. */
+  private readonly descriptionCache: SharedMiniProbCache;
 
-    checkArrayAccess(node: Lval, accept: ValidationAcceptor) {
+  /**
+   * Initialize the validator with language services.
+   *
+   * @param services   The MiniProbServices, providing caching and other helpers.
+   */
+  constructor(services: MiniProbServices) {
+    this.descriptionCache = services.caching.MiniProbCache;
+  }
 
-        if (node.index) {
-            const map = this.getTypeCache();
-            const indexType = inferType(node.index, map);
-            if (isErrorType(indexType)) {
-                accept('error', indexType.message, {
-                    node: indexType.source ?? node,
-                    property: 'index'
-                });
-                return;
-            }
-            if (!isIntegerType(indexType)) {
-                accept('error', `Index type \'${typeToString(indexType)}\' not compatible with integer`, {
-                    node,
-                    property: 'index'
-                });
-            }
-        }
-    }
-
-    checkAssignments(node: Assignment, accept: ValidationAcceptor) {
-        var map = this.getTypeCache();
-        const leftType = inferType(node.leftValue, map);
-        var rightType;
-        if (node.expression) {
-            rightType = inferType(node.expression, map);
-        } else {
-            rightType = inferType(node.distribution, map);
-        }
-
-        var skipAssignErr = false;
-        if (isErrorType(leftType)) {
-            skipAssignErr = true;
-            accept('error', leftType.message, {
-                node: leftType.source ?? node
-            })
-        }
-        if (isErrorType(rightType)) {
-            skipAssignErr = true;
-            accept('error', rightType.message, {
-                node: rightType.source ?? node
-            })
-        }
-
-        if (!skipAssignErr && !isCompatible(leftType, rightType)) {
-            accept('error', `Type ${typeToString(rightType)} is not assignable to ${typeToString(leftType)}.`, {
-                node,
-                property: 'expression'
-            })
-        }
-    }
-
-    checkFunctionCalls(node: FuncCall, accept: ValidationAcceptor) {
-
-        //Check if number of arguments match
-        var refNode = node.ref.ref;
-        if (refNode) {
-            var noMatchParams = refNode.params?.parameters.length != node.argumentList?.arguments.length;
-            if (noMatchParams) {
-                accept('error', 'Number of parameters does not match.', {
-                    node,
-                    property: 'argumentList'
-                });
-                return;
-            }
-
-            const map = this.getTypeCache();
-            const parameterTypes = refNode.params?.parameters.map(param => inferType(param, map));
-            const argumentTypes = node.argumentList?.arguments.map(arg => inferType(arg.expression, map));
-            if (argumentTypes) {
-                const callErrors = [];
-                for (let i = 0; i < argumentTypes.length; i++) {
-                    const arg = argumentTypes[i];
-                    const param = parameterTypes![i];
-                    let skipCompatibility = false;
-                    if (isErrorType(arg)) {
-                        callErrors.push({
-                            node: node.argumentList!.arguments[i],
-                            message: `Conflicting argument: ${arg.message}`
-                        });
-                        skipCompatibility = true;
-                    }
-                    if (isErrorType(param)) {
-                        callErrors.push({
-                            node: refNode.params!.parameters[i],
-                            message: `Conflicting parameter: ${param.message}`
-                        });
-                        skipCompatibility = true;
-                    }
-                    // order of arguments in isCompatible important (param2 --comp--> param1)
-                    if (!skipCompatibility && !isCompatible(parameterTypes![i], arg)) {
-                        callErrors.push({
-                            node: node.argumentList!.arguments[i],
-                            message: `Argument type \'${typeToString(arg)}\' not compatible with \'${typeToString(parameterTypes![i])}\'`
-                        });
-                    }
-                }
-
-                for (const error of callErrors) {
-                    accept('error', error.message, {
-                        node: error.node,
-                    })
-                }
-            }
-        }
-    }
-
-    checkFunctionDefinitions(node: Func, accept: ValidationAcceptor) {
-        if (node.name === 'main' && node.params) {
-            accept('error', 'Function \'main\' cannot have any arguments.', {
-                node,
-                property: 'params'
-            });
-        }
-
-        const functionNames = AstUtils.getContainerOfType(node, isProgram)!.functions.filter(func => func !== node).map(func => func.name);
-        if (functionNames.includes(node.name)) {
-            accept('error', `Function with name ${node.name} already exists`, {
-                node,
-                property: 'name'
-            });
-        }
-    }
-
-    checkProbabilisticChoices(node: ProbChoice, accept: ValidationAcceptor) {
-        const map = this.getTypeCache();
-
-        const numerator = inferType(node.numerator, map);
-        const denominator = inferType(node.denominator, map);
-
-        let skipCompatibility = false;
-        if (isErrorType(numerator)) {
-            accept('error', numerator.message, {
-                node,
-                property: 'numerator'
-            });
-            skipCompatibility = true;
-        }
-        if (isErrorType(denominator)) {
-            accept('error', denominator.message, {
-                node,
-                property: 'denominator'
-            });
-            skipCompatibility = true;
-        }
-
-        if (!skipCompatibility && !isLegalOperation(':', numerator, denominator)) {
-            accept('error', `This operation \':\' is not possible with types \'${typeToString(numerator)}\' and \'${typeToString(denominator)}\'`, {
-                node
-            });
-            return;
-        }
-
-        const num = (numerator as IntegerTypeDescription);
-        const den = (denominator as IntegerTypeDescription);
-
-        if (den.literal?.literal.value === 0) {
-            accept('error', 'Division by 0 not possible', {
-                node,
-            });
-            return;
-        }
-        if (num.signed || den.signed
-            || (num.literal && den.literal && num.literal.literal.value > den.literal.literal.value)) {
-            accept('error', 'Probability value must be 0...1 and cannot be negative', {
-                node,
-            });
-        }
-
-        // var e = numerator.literal.value / denominator.literal.value
-        // if (e > 1) {
-        //     accept('error', 'Resulting probability must be between 0..1', {
-        //         node
-        //     });
-        // }
-    }
-
-    // checks whether or not the params are comatible witht expected integer type
-    // the whole of the distribution is verified through assignment checks
-    checkDistributions(node: Distribution, accept: ValidationAcceptor) {
-
-        if ((node.name === 'Bernoulli' && (!node.q || !node.p)) || (node.name === 'Uniform' && (!node.upper || !node.lower))) {
-            accept('error', 'Distributions expect two arguments', {
-                node
-            });
-            return;
-        }
-        const map = this.getTypeCache();
-
-        let skipCompatibility = false;
-        let params: Array<{ property: 'q' | 'p' | 'lower' | 'upper'; expr: AstNode | undefined }> = [];
-
-        switch (node.name) {
-            case 'Bernoulli':
-                params = [
-                    { property: 'p', expr: node.p },
-                    { property: 'q', expr: node.q }
-                ];
-                break;
-
-            case 'Uniform':
-                params = [
-                    { property: 'lower', expr: node.lower },
-                    { property: 'upper', expr: node.upper }
-                ];
-                break;
-
-            default:
-                // not a distribution we care about
-                return;
-        }
-
-        // first pass: capture any propagated errors
-        for (const { expr } of params) {
-            const ty = inferType(expr, map);
-            if (isErrorType(ty)) {
-                accept('error', ty.message, {
-                    node: ty.source ?? node
-                });
-                skipCompatibility = true;
-            }
-        }
-
-        // second pass: if no errors, ensure each is integer
-        if (!skipCompatibility) {
-            for (const { property, expr } of params) {
-                const ty = inferType(expr, map);
-                if (!isIntegerType(ty)) {
-                    accept(
-                        'error',
-                        `Argument type '${typeToString(ty)}' not compatible with 'integer'`,
-                        { node, property }
-                    );
-                }
-            }
-        }
-
-        // also examined in assignment validation
-        // const type = inferType(node, map);
-        // if (isErrorType(type)) {
-        //     accept('error', type.message, {
-        //         node: node
-        //     });
-        // }
-    }
-
-    // checks whether or not the members of the BinaryExpression are compatible
-    // the whole of the binrayexpression is verfied thorugh the assignemnt checks
-    checkBinaryExpressions(node: BinaryExpression, accept: ValidationAcceptor) {
-        const map = this.getTypeCache();
-
-        const leftType = inferType(node.left, map);
-        const rightType = inferType(node.right, map);
-
-        let skipCompatibility = false;
-        if (isErrorType(leftType)) {
-            accept('error', leftType.message, {
-                node: leftType.source ?? node
-            });
-            skipCompatibility = true;
-        }
-        if (isErrorType(rightType)) {
-            accept('error', rightType.message, {
-                node: rightType.source ?? node
-            });
-            skipCompatibility = true;
-        }
-
-        if (!skipCompatibility && !isLegalOperation(node.operator, leftType, rightType)) {
-            accept('error', `The operation \'${node.operator}\' cannot be performed on types \'${typeToString(leftType)}\' and \'${typeToString(rightType)}\'`, {
-                node
-            });
-        }
-    }
-
-    // checks whether or not the members of the UnaryExpression is compatible
-    // the whole of the unaryExpression is verfied thorugh the assignemnt checks
-    checkUnaryExpressions(node: LogicalNegation, accept: ValidationAcceptor) {
-        const map = this.getTypeCache();
-        const operandType = inferType(node.operand, map);
-
-        if (isErrorType(operandType)) {
-            accept('error', operandType.message, {
-                node: operandType.source ?? node
-            });
-            return;
-        }
-
-        if (!isLegalOperation(node.operator, operandType)) {
-            accept('error', `The operation \'${node.operator}\' is not possible on type \'${typeToString(operandType)}\'`, {
-                node,
-                property: 'operand'
-            });
-        }
-    }
-
-    checkIntegerLiteral(node: IntegerLiteral, accept: ValidationAcceptor) {
-        // get the exact slice of source text for this node
-        const cst = node.$cstNode;
-        if (!cst) return;
-        if (/^(?![+-]?\d+[uUsS]\d+$).+/.test(cst.text)) {
-            accept('error',
-                'No spaces are allowed in integer literals',
-                { node }
-            );
-        }
-    }
-
-    checkDeclarationIds(node: Decl, accept: ValidationAcceptor) {
-        const topLevelNames = AstUtils.getContainerOfType(node, isProgram)
-            ?.declarations
-            .filter(decl => decl !== node)
-            .flatMap(decl => decl.names)
-            ?? [];
-
-        // Gather all other names in the same function (if any) inline
-        const localNames = AstUtils.getContainerOfType(node, isFunc)
-            ?.declarations
-            .filter(decl => decl !== node)
-            .flatMap(decl => decl.names)
-            ?? [];
-
-        const { hasDup } = node.names.reduce(
-            (acc, name, index) => {
-                if (acc.seen.has(name)) {
-                    acc.hasDup = index;
-                } else {
-                    acc.seen.add(name);
-                }
-                return acc;
-            },
-            { seen: new Set<string>(), hasDup: -1 }
+  /**
+   * Ensure that any array‐style L-value index is an integer.
+   *
+   * - Infers the type of `node.index`.
+   * - If it’s an error type, reports that error.
+   * - Otherwise, confirms it’s an integer, else reports incompatibility.
+   *
+   * @param node      The Lval node to validate.
+   * @param accept    Callback to emit validation messages.
+   */
+  checkArrayAccess(node: Lval, accept: ValidationAcceptor) {
+    if (node.index) {
+      const map = this.getTypeCache();
+      const indexType = inferType(node.index, map);
+      if (isErrorType(indexType)) {
+        accept('error', indexType.message, {
+          node: indexType.source ?? node,
+          property: 'index'
+        });
+        return;
+      }
+      if (!isIntegerType(indexType)) {
+        accept('error',
+          `Index type '${typeToString(indexType)}' not compatible with integer`,
+          { node, property: 'index' }
         );
-        if (hasDup) {
-            accept(
-                'error',
-                'Identifier is already declared here',
-                { node, property: 'names', index: hasDup }
-            );
-        }
-        const forbidden = new Set<string>([...topLevelNames, ...localNames]);
-        for (let i = 0; i < node.names.length; i++) {
-            const name = node.names[i];
-            if (forbidden.has(name)) {
-                accept(
-                    'error',
-                    `Identifier '${name}' is already declared`,
-                    { node, property: 'names', index: i }
-                );
-            }
-        }
+      }
+    }
+  }
+
+  /**
+   * Validate assignments for type compatibility.
+   *
+   * - Infers left‐hand and right‐hand types (expression or distribution).
+   * - If either side is an error type, reports it and skips compatibility.
+   * - Otherwise, ensures the right side can be assigned to the left side.
+   *
+   * @param node      The Assignment AST node.
+   * @param accept    Callback to emit validation messages.
+   */
+  checkAssignments(node: Assignment, accept: ValidationAcceptor) {
+    var map = this.getTypeCache();
+    const leftType = inferType(node.leftValue, map);
+    var rightType;
+    if (node.expression) {
+      rightType = inferType(node.expression, map);
+    } else {
+      rightType = inferType(node.distribution, map);
     }
 
-    private getTypeCache(): Map<AstNode, TypeDescription> {
-        return new Map();
+    var skipAssignErr = false;
+    if (isErrorType(leftType)) {
+      skipAssignErr = true;
+      accept('error', leftType.message, {
+        node: leftType.source ?? node
+      });
     }
+    if (isErrorType(rightType)) {
+      skipAssignErr = true;
+      accept('error', rightType.message, {
+        node: rightType.source ?? node
+      });
+    }
+
+    if (!skipAssignErr && !isCompatible(leftType, rightType)) {
+      accept('error',
+        `Type ${typeToString(rightType)} is not assignable to ${typeToString(leftType)}.`,
+        { node, property: 'expression' }
+      );
+    }
+  }
+
+  /**
+   * Check function calls for correct argument count and types.
+   *
+   * - Verifies the number of actual arguments matches the function’s parameters.
+   * - Infers each parameter and argument type.
+   * - Reports errors for any mismatches or propagation errors.
+   *
+   * @param node      The FuncCall AST node.
+   * @param accept    Callback to emit validation messages.
+   */
+  checkFunctionCalls(node: FuncCall, accept: ValidationAcceptor) {
+    var refNode = node.ref.ref;
+    if (refNode) {
+      var noMatchParams =
+        refNode.params?.parameters.length !== node.argumentList?.arguments.length;
+      if (noMatchParams) {
+        accept('error', 'Number of parameters does not match.', {
+          node, property: 'argumentList'
+        });
+        return;
+      }
+
+      const map = this.getTypeCache();
+      const parameterTypes = refNode.params?.parameters.map(p => inferType(p, map));
+      const argumentTypes = node.argumentList?.arguments.map(a => inferType(a.expression, map));
+      if (argumentTypes) {
+        const callErrors = [];
+        for (let i = 0; i < argumentTypes.length; i++) {
+          const arg = argumentTypes[i];
+          const param = parameterTypes![i];
+          let skipCompatibility = false;
+
+          if (isErrorType(arg)) {
+            callErrors.push({
+              node: node.argumentList!.arguments[i],
+              message: `Conflicting argument: ${arg.message}`
+            });
+            skipCompatibility = true;
+          }
+          if (isErrorType(param)) {
+            callErrors.push({
+              node: refNode.params!.parameters[i],
+              message: `Conflicting parameter: ${param.message}`
+            });
+            skipCompatibility = true;
+          }
+          if (!skipCompatibility && !isCompatible(parameterTypes![i], arg)) {
+            callErrors.push({
+              node: node.argumentList!.arguments[i],
+              message: `Argument type '${typeToString(arg)}' not compatible with '${typeToString(parameterTypes![i])}'`
+            });
+          }
+        }
+        for (const error of callErrors) {
+          accept('error', error.message, { node: error.node });
+        }
+      }
+    }
+  }
+
+  /**
+   * Enforce uniqueness and rules for function definitions.
+   *
+   * - ‘main’ must not take any parameters.
+   * - No two functions may share the same name within the same program.
+   *
+   * @param node      The Func AST node.
+   * @param accept    Callback to emit validation messages.
+   */
+  checkFunctionDefinitions(node: Func, accept: ValidationAcceptor) {
+    if (node.name === 'main' && node.params) {
+      accept('error', 'Function \'main\' cannot have any arguments.', {
+        node, property: 'params'
+      });
+    }
+
+    const functionNames = AstUtils
+      .getContainerOfType(node, isProgram)!
+      .functions
+      .filter(f => f !== node)
+      .map(f => f.name);
+
+    if (functionNames.includes(node.name)) {
+      accept('error', `Function with name ${node.name} already exists`, {
+        node, property: 'name'
+      });
+    }
+  }
+
+  /**
+   * Validate probabilistic choices (numerator : denominator).
+   *
+   * - Infers type of numerator and denominator.
+   * - Ensures the ‘:’ operation is legal between those types.
+   * - Checks against division by zero and enforces 0 ≤ value ≤ 1.
+   *
+   * @param node      The ProbChoice AST node.
+   * @param accept    Callback to emit validation messages.
+   */
+  checkProbabilisticChoices(node: ProbChoice, accept: ValidationAcceptor) {
+    const map = this.getTypeCache();
+    const numerator = inferType(node.numerator, map);
+    const denominator = inferType(node.denominator, map);
+
+    let skipCompatibility = false;
+    if (isErrorType(numerator)) {
+      accept('error', numerator.message, { node, property: 'numerator' });
+      skipCompatibility = true;
+    }
+    if (isErrorType(denominator)) {
+      accept('error', denominator.message, { node, property: 'denominator' });
+      skipCompatibility = true;
+    }
+    if (!skipCompatibility && !isLegalOperation(':', numerator, denominator)) {
+      accept('error',
+        `This operation ':' is not possible with types '${typeToString(numerator)}' and '${typeToString(denominator)}'`,
+        { node }
+      );
+      return;
+    }
+
+    const num = numerator as IntegerTypeDescription;
+    const den = denominator as IntegerTypeDescription;
+    if (den.literal?.literal.value === 0) {
+      accept('error', 'Division by 0 not possible', { node });
+      return;
+    }
+    if (num.signed ||
+        den.signed ||
+        (num.literal && den.literal && num.literal.literal.value > den.literal.literal.value)
+    ) {
+      accept('error', 'Probability value must be 0...1 and cannot be negative', { node });
+    }
+  }
+
+  /**
+   * Validate distribution constructors (Bernoulli, Uniform).
+   *
+   * - Ensures exactly two arguments are present.
+   * - Internally builds a `params` array of { property: 'q'|'p'|'lower'|'upper'; expr }.
+   * - First pass: capture any propagated errors.
+   * - Second pass: if no errors, ensure each expr is an integer type.
+   *
+   * @param node      The Distribution AST node.
+   * @param accept    Callback to emit validation messages.
+   */
+  checkDistributions(node: Distribution, accept: ValidationAcceptor) {
+    if ((node.name === 'Bernoulli' && (!node.q || !node.p)) ||
+        (node.name === 'Uniform'   && (!node.upper || !node.lower))
+    ) {
+      accept('error', 'Distributions expect two arguments', { node });
+      return;
+    }
+    const map = this.getTypeCache();
+
+    let skipCompatibility = false;
+    let params: Array<{ property: 'q' | 'p' | 'lower' | 'upper'; expr: AstNode | undefined }> = [];
+
+    switch (node.name) {
+      case 'Bernoulli':
+        params = [{ property: 'p', expr: node.p }, { property: 'q', expr: node.q }];
+        break;
+      case 'Uniform':
+        params = [{ property: 'lower', expr: node.lower }, { property: 'upper', expr: node.upper }];
+        break;
+      default:
+        return;
+    }
+
+    for (const { expr } of params) {
+      const ty = inferType(expr, map);
+      if (isErrorType(ty)) {
+        accept('error', ty.message, { node: ty.source ?? node });
+        skipCompatibility = true;
+      }
+    }
+
+    if (!skipCompatibility) {
+      for (const { property, expr } of params) {
+        const ty = inferType(expr, map);
+        if (!isIntegerType(ty)) {
+          accept('error',
+            `Argument type '${typeToString(ty)}' not compatible with 'integer'`,
+            { node, property }
+          );
+        }
+      }
+    }
+  }
+
+  /**
+   * Validate binary expressions for operand compatibility.
+   *
+   * - Infers types of left and right operands.
+   * - Reports any propagated error types.
+   * - Ensures the given operator is legal on those types.
+   *
+   * @param node      The BinaryExpression AST node.
+   * @param accept    Callback to emit validation messages.
+   */
+  checkBinaryExpressions(node: BinaryExpression, accept: ValidationAcceptor) {
+    const map = this.getTypeCache();
+    const leftType = inferType(node.left, map);
+    const rightType = inferType(node.right, map);
+
+    let skipCompatibility = false;
+    if (isErrorType(leftType)) {
+      accept('error', leftType.message, { node: leftType.source ?? node });
+      skipCompatibility = true;
+    }
+    if (isErrorType(rightType)) {
+      accept('error', rightType.message, { node: rightType.source ?? node });
+      skipCompatibility = true;
+    }
+
+    if (!skipCompatibility && !isLegalOperation(node.operator, leftType, rightType)) {
+      accept('error',
+        `The operation '${node.operator}' cannot be performed on types '${typeToString(leftType)}' and '${typeToString(rightType)}'`,
+        { node }
+      );
+    }
+  }
+
+  /**
+   * Validate logical negation expressions for a legal operand type.
+   *
+   * - Infers the operand’s type.
+   * - Reports any propagated error.
+   * - Ensures the '!' operator is legal on that type.
+   *
+   * @param node      The LogicalNegation AST node.
+   * @param accept    Callback to emit validation messages.
+   */
+  checkUnaryExpressions(node: LogicalNegation, accept: ValidationAcceptor) {
+    const map = this.getTypeCache();
+    const operandType = inferType(node.operand, map);
+
+    if (isErrorType(operandType)) {
+      accept('error', operandType.message, { node: operandType.source ?? node });
+      return;
+    }
+    if (!isLegalOperation(node.operator, operandType)) {
+      accept('error',
+        `The operation '${node.operator}' is not possible on type '${typeToString(operandType)}'`,
+        { node, property: 'operand' }
+      );
+    }
+  }
+
+  /**
+   * Ensure integer literals contain no internal spaces.
+   *
+   * - Retrieves the CST token text.
+   * - Uses regex to detect any spaces in the numeric literal.
+   *
+   * @param node      The IntegerLiteral AST node.
+   * @param accept    Callback to emit validation messages.
+   */
+  checkIntegerLiteral(node: IntegerLiteral, accept: ValidationAcceptor) {
+    const cst = node.$cstNode;
+    if (!cst) return;
+    if (/^(?![+-]?\d+[uUsS]\d+$).+/.test(cst.text)) {
+      accept('error', 'No spaces are allowed in integer literals', { node });
+    }
+  }
+
+  /**
+   * Validate declaration statements to prevent duplicate identifiers.
+   *
+   * - Gathers all top‐level and local declarations in the same scope.
+   * - Checks for duplicate names within this node’s own list.
+   * - Ensures none of the names shadow existing declarations.
+   *
+   * @param node      The Decl AST node.
+   * @param accept    Callback to emit validation messages.
+   */
+  checkDeclarationIds(node: Decl, accept: ValidationAcceptor) {
+    const topLevelNames = AstUtils.getContainerOfType(node, isProgram)
+      ?.declarations.filter(d => d !== node).flatMap(d => d.names) ?? [];
+    const localNames = AstUtils.getContainerOfType(node, isFunc)
+      ?.declarations.filter(d => d !== node).flatMap(d => d.names) ?? [];
+
+    const { hasDup } = node.names.reduce((acc, name, idx) => {
+      if (acc.seen.has(name)) acc.hasDup = idx;
+      else acc.seen.add(name);
+      return acc;
+    }, { seen: new Set(), hasDup: -1 });
+
+    if (hasDup >= 0) {
+      accept('error', 'Identifier is already declared here', {
+        node, property: 'names', index: hasDup
+      });
+    }
+
+    const forbidden = new Set([...topLevelNames, ...localNames]);
+    node.names.forEach((name, i) => {
+      if (forbidden.has(name)) {
+        accept('error',
+          `Identifier '${name}' is already declared`,
+          { node, property: 'names', index: i }
+        );
+      }
+    });
+  }
+
+  /**
+   * Create a fresh, empty cache for type inference to avoid cross-node pollution.
+   *
+   * @returns A new Map from AstNode to inferred TypeDescription.
+   */
+  private getTypeCache(): Map<AstNode, TypeDescription> {
+    return new Map();
+  }
 }
