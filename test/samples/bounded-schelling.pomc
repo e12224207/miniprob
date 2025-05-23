@@ -20,10 +20,10 @@ Reference: A. Stuhlmueller, N.D. Goodman, Reasoning about Reasoning by Nested Co
 */ 
 
 
-//probabilistic query: approximate;
-//formula = F (ret And main And [main|res == 1u1]);
+probabilistic query: approximate;
+formula = F (ret And main And [main|res == 1u1]);
 
-//program:
+program:
 u4 p;
 main() {
   bool res;
