@@ -1,5 +1,5 @@
 import { beforeAll, describe, it, expect } from 'vitest';
-import { services, initializeTestWorkspace, parse, files } from '../support/setup.js';
+import { services, initializeTestWorkspace, parse, initialFiles } from '../support/setup.js';
 import { Lval, Decl, FuncCall, Func } from '../../src/language/generated/ast.js';
 import { LangiumDocument, URI } from 'langium';
 
@@ -14,10 +14,10 @@ async function buildUri(uri: URI): Promise<void> {
 beforeAll(async () => {
   await initializeTestWorkspace();
 
-  await buildUri(URI.parse(`file:///lib.pomc`));
+  await buildUri(URI.parse(Object.keys(initialFiles)[0]));
 
   // parse “main.prob” by overriding the URI so it re-uses our in-memory doc
-  mainDoc = await parse(files['file:///main.pomc'], { documentUri: 'file:///main.pomc' }
+  mainDoc = await parse(initialFiles['file:///main.pomc'], { documentUri: 'file:///main.pomc' }
   );
 });
 
@@ -27,10 +27,13 @@ describe('“#include” linking', () => {
     const stmt = mainDoc.parseResult.value.functions[0].body.statements;
     const lv = (stmt[0] as { leftValue: Lval }).leftValue;
     const fc = (stmt[1] as FuncCall);
+    const lvErr = (stmt[2] as { leftValue: Lval }).leftValue;
     expect(lv.ref.error).toBeFalsy();
     expect(fc.ref.error).toBeFalsy();
+    expect(lvErr.ref.error).toBeTruthy();
     const target = lv.ref.ref as Decl;
+    expect(target.names[0]).toBe('bar')
     const fcTarget = fc.ref.ref as Func;
-    expect(fcTarget.name).toBe('bar');
+    expect(fcTarget.name).toBe('foo');
   });
 });
