@@ -168,8 +168,7 @@ export class MiniProbValidator {
   checkFunctionCalls(node: FuncCall, accept: ValidationAcceptor) {
     var refNode = node.ref.ref;
     if (refNode) {
-      var noMatchParams =
-        refNode.params?.parameters.length !== node.argumentList?.arguments.length;
+      var noMatchParams = refNode.params?.parameters.length !== node.argumentList?.arguments.length;
       if (noMatchParams) {
         accept('error', 'Number of parameters does not match.', {
           node, property: 'argumentList'
@@ -178,37 +177,45 @@ export class MiniProbValidator {
       }
 
       const map = this.getTypeCache();
-      const parameterTypes = refNode.params?.parameters.map(p => inferType(p, map));
-      const argumentTypes = node.argumentList?.arguments.map(a => inferType(a.expression, map));
-      if (argumentTypes) {
-        const callErrors = [];
-        for (let i = 0; i < argumentTypes.length; i++) {
-          const arg = argumentTypes[i];
-          const param = parameterTypes![i];
+      // arguments exist => parameter exist (with same length)
+      if (node.argumentList) {
+        const functionCallErrors = [];
+        for (let i = 0; i < node.argumentList.arguments.length; i++) {
           let skipCompatibility = false;
 
-          if (isErrorType(arg)) {
-            callErrors.push({
-              node: node.argumentList!.arguments[i],
-              message: `Conflicting argument: ${arg.message}`
+          //value-result parameter have to be matched with references
+          if (refNode.params!.parameters[i].byRef && !isLval(node.argumentList.arguments[i].expression)) {
+            functionCallErrors.push({
+              node: node.argumentList.arguments[i],
+              message: 'Value-result parameter expect named variables.'
             });
             skipCompatibility = true;
           }
-          if (isErrorType(param)) {
-            callErrors.push({
+
+          const argType = inferType(node.argumentList.arguments[i].expression, map);
+          const paramType = inferType(refNode.params!.parameters[i], map);
+          if (isErrorType(argType)) {
+            functionCallErrors.push({
+              node: node.argumentList!.arguments[i],
+              message: `Conflicting argument: ${argType.message}`
+            });
+            skipCompatibility = true;
+          }
+          if (isErrorType(paramType)) {
+            functionCallErrors.push({
               node: refNode.params!.parameters[i],
-              message: `Conflicting parameter: ${param.message}`
+              message: `Conflicting parameter: ${paramType.message}`
             });
             skipCompatibility = true;
           }
-          if (!skipCompatibility && !isCompatible(parameterTypes![i], arg)) {
-            callErrors.push({
+          if (!skipCompatibility && !isCompatible(paramType, argType)) {
+            functionCallErrors.push({
               node: node.argumentList!.arguments[i],
-              message: `Argument type '${typeToString(arg)}' not compatible with '${typeToString(parameterTypes![i])}'`
+              message: `Argument type '${typeToString(argType)}' not compatible with '${typeToString(paramType)}'`
             });
           }
         }
-        for (const error of callErrors) {
+        for (const error of functionCallErrors) {
           accept('error', error.message, { node: error.node });
         }
       }
@@ -283,8 +290,8 @@ export class MiniProbValidator {
       return;
     }
     if (num.signed ||
-        den.signed ||
-        (num.literal && den.literal && num.literal.literal.value > den.literal.literal.value)
+      den.signed ||
+      (num.literal && den.literal && num.literal.literal.value > den.literal.literal.value)
     ) {
       accept('error', 'Probability value must be 0...1 and cannot be negative', { node });
     }
@@ -303,7 +310,7 @@ export class MiniProbValidator {
    */
   checkDistributions(node: Distribution, accept: ValidationAcceptor) {
     if ((node.name === 'Bernoulli' && (!node.q || !node.p)) ||
-        (node.name === 'Uniform'   && (!node.upper || !node.lower))
+      (node.name === 'Uniform' && (!node.upper || !node.lower))
     ) {
       accept('error', 'Distributions expect two arguments', { node });
       return;
