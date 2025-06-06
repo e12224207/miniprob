@@ -48,7 +48,7 @@ Query:
 ParamList:
     parameters+=Param (',' parameters+=Param)*;
 Param:
-    type=Type byRef?='&'? name=ID;
+    type=Type byRef?='&'? name=ID; //distributive?
 ArgList:
     arguments+=Arg (',' arguments+=Arg)*;
 Arg:
