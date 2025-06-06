@@ -26,7 +26,8 @@ import {
   LogicalNegation,
   IntegerLiteral,
   Program,
-  Query
+  Query,
+  Observation
 } from '../generated/ast.js';
 import type { MiniProbServices } from '../mini-prob-module.js';
 import { SharedMiniProbCache } from './mini-prob-caching.js';
@@ -34,6 +35,7 @@ import {
   DistributionTypeDescription,
   ErrorType,
   IntegerTypeDescription,
+  isBooleanType,
   isErrorType,
   isIntegerType,
   TypeDescription,
@@ -60,6 +62,7 @@ export function registerValidationChecks(services: MiniProbServices) {
     ProbChoice: validator.checkProbabilisticChoices,
     Assignment: validator.checkAssignments,
     Distribution: validator.checkDistributions,
+    Observation: validator.checkObservationCondition,
     BinaryExpression: validator.checkBinaryExpressions,
     LogicalNegation: validator.checkUnaryExpressions,
     IntegerLiteral: validator.checkIntegerLiteral,
@@ -183,16 +186,7 @@ export class MiniProbValidator {
       if (node.argumentList) {
         const functionCallErrors = [];
         for (let i = 0; i < node.argumentList.arguments.length; i++) {
-          let skipCompatibility = false;
-
-          //value-result parameter have to be matched with references
-          if (refNode.params!.parameters[i].byRef && !isLval(node.argumentList.arguments[i].expression)) {
-            functionCallErrors.push({
-              node: node.argumentList.arguments[i],
-              message: 'Value-result parameter expect named variables.'
-            });
-            skipCompatibility = true;
-          }
+          let skipCompatibility = false;          
 
           const argType = inferType(node.argumentList.arguments[i].expression, map);
           const paramType = inferType(refNode.params!.parameters[i], map);
@@ -215,6 +209,24 @@ export class MiniProbValidator {
               node: node.argumentList!.arguments[i],
               message: `Argument type '${typeToString(argType)}' not compatible with '${typeToString(paramType)}'`
             });
+          }
+
+          //value-result parameter have to be matched with references
+          if (refNode.params!.parameters[i].byRef) {
+            if (!isLval(node.argumentList.arguments[i].expression)) {
+              functionCallErrors.push({
+                node: node.argumentList.arguments[i],
+                message: 'Value-result parameter expect named variables.'
+              });
+            }
+
+            //value-result parameters enforce equivalence: argType <=> paramType
+            if (!isCompatible(argType, paramType)) {
+              functionCallErrors.push({
+                node: node.argumentList.arguments[i],
+                message: 'Value-result parameter and argument types must match.'
+              });
+            }
           }
         }
         for (const error of functionCallErrors) {
@@ -282,7 +294,7 @@ export class MiniProbValidator {
       }
     }
   }
-  
+
   /**
    * Validate probabilistic choices (numerator : denominator).
    *
@@ -497,6 +509,18 @@ export class MiniProbValidator {
         );
       }
     });
+  }
+
+  checkObservationCondition(node: Observation, accept: ValidationAcceptor) {
+    
+    const map = this.getTypeCache();
+    const conditionType = inferType(node.condition, map)
+    if (!isBooleanType(conditionType)) {
+      accept('error', 'Only boolean expressions can be observed', {
+        node,
+        property: 'condition'
+      });
+    }
   }
 
   /**
