@@ -1,0 +1,98 @@
+main() {
+    throw;
+}
+
+testParams(
+    u6[8] pArr,
+    u8    pInt,
+    bool  pBool,
+    u6[8] &pArrRef,
+    u8    &pRefInt,
+    bool  &pRefBool
+) {
+    u8    localInt;
+    u6[8] localArr;
+    bool  localBool;
+    throw;
+}
+helperValueResult(u8 &byRef){throw;}
+// ————————————————————————————————————————————————
+// Valid function-call argument combinations
+// ————————————————————————————————————————————————
+succeedingParams() {
+    u8    localInt;
+    u4    localIntSmaller;
+    u6[8] localArr;
+    u4[8] localArrSmaller;
+    bool  localBool;
+
+    // basic validation and matching
+    // literal arguments: same sizes
+    testParams(localArr, 42u8, false, localArr, localInt, localBool);
+    testParams(localArrSmaller, 3u4, true, localArr, localInt, localBool);
+    testParams(localArr, localInt, localBool, localArr, localInt, localBool);
+    testParams(localArrSmaller, localIntSmaller, localBool, localArr, localInt, localBool);
+
+    // some complex expressions in arguments
+    testParams(
+        localArr,
+        ((localInt + 5u8) / 2u8),
+        (!!localBool),
+        localArr,
+        localInt,
+        localBool
+    );
+
+    testParams(
+        localArrSmaller,
+        (localIntSmaller * 2u4 + 3u4),
+        (localBool && (5u8 > 3u8)),
+        localArr,
+        localInt,
+        localBool
+    );    
+}
+
+// ————————————————————————————————————————————————
+// Invalid function-call argument combinations
+// ————————————————————————————————————————————————
+failingParams() {
+    u16    localIntBigger;
+    u12[8] localArrBigger;
+    bool   localBool;
+
+    // wrong array and int widths, and bool/int mix
+    testParams(localArrBigger, localIntBigger, localIntBigger, localArrBigger, localIntBigger, localArrBigger);
+    testParams(localIntBigger, localBool, localIntBigger, false, true, 4u8);
+
+    // incompatible literal args: width too big for integer, bool where int expected, array where bool expected
+    testParams( localArrBigger, 256u16, 8u8, localArrBigger, false, localArrBigger);
+
+    // some complex expressions in arguments
+    testParams(
+        localArrBigger,
+        ((localIntBigger + 5u8) / 2u8),
+        (!!localBool),
+        localArrBigger,
+        (4u4 / 2u4),
+        (!localBool)
+    );
+
+    testParams(
+        localArrBigger,
+        (localIntBigger * 2u4 + 3u4),
+        (localBool && (5u8 > 3u8)),
+        localArrBigger,
+        (localIntBigger + 1u4),
+        (false || localBool)
+    );
+}
+
+// ————————————————————————————————————————————————
+// Wrong arity: too few args; by reference with literal
+// ————————————————————————————————————————————————
+failingFuncCall(bool param1) {
+    testParams();
+    testParams(param1);
+    query helperValueResult(8u8);
+}

@@ -1,0 +1,59 @@
+bool  globalBool;
+u8    globalUint;
+s8    globalSint;
+
+main() {
+    throw;
+}
+
+// ————————————————————————————————————————————————
+// Valid probabilistic expressions: should pass validation
+// ————————————————————————————————————————————————
+succeedingProbabilistic() {
+    bool localBool;
+    u8   localUint;
+    s8   localSint;
+
+    // validate using literals
+    localBool   = true  {1u8:2u8} false;
+    localBool   = false {1u8:1u8} true;
+
+    localUint   = 1u1 {1u8:1u8} 0u1;
+    localUint   = 5u8   {1u8:4u8} 6s8 {2u8:4u8} 7u8;
+
+    localSint   = -2s8  {1u8:8u8}  0s8 {3u8:8u8}   2s8 {2u8:8u8}  4u7;
+    localUint   = (10u8 - 1u8) {1u8:3u8} (2u8 * 3u8) {2u8:3u8} (8u8 / 2u8);
+
+    globalSint  =  1s8   {1u8:10u8}
+                  2s8   {2u8:10u8}
+                  3s8   {3u8:10u8}
+                  4s8   {4u8:10u8}
+                  5s8;
+
+    // additional complex expressions
+    localUint   = (5u8 + (3u8 * 2u8)) { (1u8 + 2u8):(3u8 * 1u8) } (8u8 / (2u8 + 2u8));
+    globalSint  = ((-1s8) * (2u8 + 2u8)) { (1u8):(1u8 + 1u8) } ((3s8 - 1s8) % 4u8);
+    localBool   = ((5u8 < (3u8 + 4u8)) && !false) { (2u8):(1u8 + 1u8) } (true || (false && true));
+}
+
+// ————————————————————————————————————————————————
+// Invalid probabilistic expressions: should be rejected
+// ————————————————————————————————————————————————
+failingProbabilistic() {
+    bool localBool;
+
+    // validate with literals
+    localBool   = true  {3u8:2u8} false;
+    localBool   = false {1u8:0u8} false;
+    localBool   = -5s6  {1u5:2u8} false;
+    localBool = true { 1u2 : true } false;
+    localBool = true { true : true } false;
+
+    // malformed braces/syntax
+    localBool   = true  {1u8:2u8};
+    localBool   = {1u8:2u8} true false;
+    localBool   = true  1u8:2u8} false;   // missing '{'
+    localBool   = true  {1u8:2u8 false;   // missing '}'
+    localBool   = true  {1u8} false;      // missing ':'
+
+}

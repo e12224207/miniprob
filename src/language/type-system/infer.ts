@@ -91,7 +91,7 @@ function inferBinaryExpression(expr: BinaryExpression, cache: Map<AstNode, TypeD
             let biggerWidth = (left.signed ? left.width - 1 : left.width) > (right.signed ? right.width - 1 : right.width) ? left.width : right.width;
             return createIntegerType(biggerWidth, left.signed || right.signed);
         } else {
-            return createErrorType('Could not infer type from binary expression due to conflicted state', expr);
+            return createErrorType('Could not infer type due to inadequate members.', expr);
         }
     } else if (['&&', '||', '<', '<=', '>', '>=', '==', '!='].includes(expr.operator)) {
         return createBooleanType();
@@ -119,7 +119,7 @@ function inferDistribution(distribution: Distribution, cache: Map<AstNode, TypeD
             if (isIntegerType(upperType)) {
                 return createIntegerType(upperType.width, upperType.signed);
             }
-            return createErrorType('Unable to wholly infer type of Uniform distribution due to conflicting upper limit', distribution);
+            return createErrorType('Unable to wholly infer type due to conflicting or missing upper limit', distribution);
     }
 }
 

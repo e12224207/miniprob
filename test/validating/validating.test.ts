@@ -8,9 +8,20 @@ import { Program, isProgram } from "../../src/language/generated/ast.js";
 import { join } from "node:path";
 import { readFileSync } from "node:fs";
 
+import expectedErrorsJson from '../samples/validation/ExpectedErrorMessages.json'
+
 let services: ReturnType<typeof createMiniProbServices>;
 let parse: ReturnType<typeof parseHelper<Program>>;
 let document: LangiumDocument<Program> | undefined;
+
+// constants for each validation file
+const FUNC_CALL_VALIDATION = 'funcCallValidation.pomc';
+const OBSERVE_AND_QUERY_VALIDATION = 'observeAndQueryValidation.pomc';
+const BINARY_EXPRESSION_VALIDATION = 'binaryExpressionValidation.pomc';
+const DISTRIBUTION_VALIDATION = 'distributionValidation.pomc';
+const LITERAL_AND_UNARY_VALIDATION = 'literalAndUnaryValidation.pomc';
+const PROBABILISTIC_ASSIGNMENT_VALIDATION = 'probabilisticAssignmentValidation.pomc';
+
 
 let sampleFiles = [
   'bounded-schelling.pomc',
@@ -27,9 +38,6 @@ beforeAll(async () => {
   services = createMiniProbServices(EmptyFileSystem);
   const doParse = parseHelper<Program>(services.MiniProb);
   parse = (input: string) => doParse(input, { validation: true });
-
-  // activate the following if your linking test requires elements from a built-in library, for example
-  // await services.shared.workspace.WorkspaceManager.initializeWorkspace([]);
 });
 
 describe('Parsing Module', () => {
@@ -51,7 +59,7 @@ describe('validate based on samples from https://github.com/michiari/POMC/tree/p
         console.log('CheckDocumentValid is not undefined');
         expect(
           document.diagnostics?.map(diagnosticToString).join('\n')
-        ).toEqual( //empty else block
+        ).toEqual(
           expect.stringContaining(
             s`Expecting: expecting at least one iteration which starts with one of these possible Token sequences::`
           )
@@ -60,6 +68,90 @@ describe('validate based on samples from https://github.com/michiari/POMC/tree/p
     }
   })
 });
+
+describe('validating type system and semantics of test/samples/validation', async () => {
+
+  it('groups and sorts diagnostics, then compares to sorted expected for each file', async () => {
+
+    const expectedErrors = expectedErrorsJson as Record<string, Record<string, string[]>>;
+    const fileNames = Object.keys(expectedErrors);
+
+    for (const fileName of fileNames) {
+      console.log(`\n=== Validating: ${fileName} ===`);
+
+      // Parse the .pomc file with validation enabled
+      const filePath = join(__dirname, `../samples/validation/${fileName}`);
+      const fileContent = readFileSync(filePath, 'utf8');
+      const document: LangiumDocument<Program> = await parse(fileContent, { validation: true });
+
+
+      const actualGroupsMap = groupDiagnostics(document.diagnostics);
+      const actualLineKeys = Object.keys(actualGroupsMap)
+        .map(k => Number(k))
+        .sort((a, b) => a - b)
+        .map(n => String(n));
+      const actualGroupsArr: string[][] = actualLineKeys.map(k => actualGroupsMap[k]);
+
+
+      const rawExpected = expectedErrors[fileName];
+      if (!rawExpected) {
+        throw new Error(`No expected‐errors entry found for ${fileName}`);
+      }
+
+      const expectedLineKeys = Object.keys(rawExpected)
+        .map(k => Number(k))
+        .sort((a, b) => a - b)
+        .map(n => String(n));
+      const expectedGroupsArr: string[][] = expectedLineKeys.map(k => rawExpected[k]);
+
+
+      expect(actualGroupsArr.length).toBe(expectedGroupsArr.length);
+
+      for (let i = 0; i < expectedGroupsArr.length; i++) {
+        const expGroup = expectedGroupsArr[i];
+        const actGroup = actualGroupsArr[i];
+        
+        expect(actGroup).toHaveLength(expGroup.length);
+
+        for (const expMsg of expGroup) {
+          const found = actGroup.some(actMsg => actMsg.endsWith(expMsg));
+          expect(found).toBe(true);
+        }
+      }
+    }
+  });
+});
+
+function checkDocumentValid(document: LangiumDocument): string | undefined {
+  return document.parseResult.parserErrors.length && s`
+        Parser errors:
+          ${document.parseResult.parserErrors.map(e => e.message).join('\n  ')}
+    `
+    || document.parseResult.value === undefined && `ParseResult is 'undefined'.`
+    || !isProgram(document.parseResult.value) && `Root AST object is a ${document.parseResult.value.$type}, expected a '${Program}'.`
+    || undefined;
+}
+
+function diagnosticToString(d: Diagnostic) {
+  return `[${d.range.start.line}:${d.range.start.character}..${d.range.end.line}:${d.range.end.character}]: ${d.message}`;
+}
+
+/**
+ * Groups diagnostics by start line, then sorts each group’s messages.
+ */
+function groupDiagnostics(diagnostics: readonly Diagnostic[] = []): Record<string, string[]> {
+  const groups: Record<string, string[]> = {};
+  for (const d of diagnostics) {
+    const lineKey = String(d.range.start.line);
+    const msg = diagnosticToString(d);
+    if (!groups[lineKey]) {
+      groups[lineKey] = [];
+    }
+    groups[lineKey].push(msg);
+  }
+  return groups;
+}
+
 
 // describe('Validating', () => {
 //   
@@ -93,16 +185,3 @@ describe('validate based on samples from https://github.com/michiari/POMC/tree/p
 //     });
 // });
 // 
-function checkDocumentValid(document: LangiumDocument): string | undefined {
-  return document.parseResult.parserErrors.length && s`
-        Parser errors:
-          ${document.parseResult.parserErrors.map(e => e.message).join('\n  ')}
-    `
-    || document.parseResult.value === undefined && `ParseResult is 'undefined'.`
-    || !isProgram(document.parseResult.value) && `Root AST object is a ${document.parseResult.value.$type}, expected a '${Program}'.`
-    || undefined;
-}
-
-function diagnosticToString(d: Diagnostic) {
-  return `[${d.range.start.line}:${d.range.start.character}..${d.range.end.line}:${d.range.end.character}]: ${d.message}`;
-}

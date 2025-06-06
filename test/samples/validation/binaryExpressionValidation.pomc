@@ -1,0 +1,93 @@
+bool globalBool;
+u8   globalUint;
+s8   globalSint;
+
+main() {
+    throw;
+}
+
+// ————————————————————————————————————————————————
+// Valid binary operations: should pass your type checker
+// ————————————————————————————————————————————————
+succeedingBinary() {
+    bool localBool;
+
+    // Arithmetic on unsigned and signed
+    globalUint  = 5u8 + 3u8;
+    globalUint  = 10u8 - 4u8;
+    globalUint  = 6u8 * 7u8;
+    globalUint  = 8u8 / 2u8;
+    globalUint  = 11u8 % 3u8;
+
+    globalSint  = 5s8 + (-2s8);
+    globalSint  = 7s8 - 1s8;
+    globalSint  = 4s8 * 2s8;
+    globalSint  = 9s8 / 3s8;
+    globalSint  = 10s8 % 4s8;
+
+    // Comparisons yield bool
+    globalBool  = 4u8 == 4u8;
+    globalBool  = 4u8 == 4s8;
+    globalBool  = 5s8 != 2s8;
+    globalBool  = 3u8 <  10u8;
+    globalBool  = 7s8 >  (-1s8);
+    globalBool  = 2u8 <= 2u8;
+    globalBool  = 8s8 >= 5s8;
+    globalBool  = true == true;
+    globalBool  = false == false;
+    //comparison with mixed types
+    globalBool  = 4u8 == false;
+    globalBool  = true != 2s8;
+
+    // Arithmetic mixing signed and unsigned    
+    globalSint  = 4s8 - 2u8;
+    globalSint  = 4s8 % 2u8;
+    globalUint  = 5u9 * 3s8;
+    globalUint  = 5u8 / 3s9;
+
+    // Mixed comparisons with parenthesized expressions
+    localBool   = (5u8 + 3u8) == 8u8 && (2s8 * 2s8) == 4s8;
+    localBool   = (11u8 % 2u8) < 2u8 || (true && false);
+}
+
+// ————————————————————————————————————————————————
+// Invalid binary operations: should be rejected
+// ————————————————————————————————————————————————
+failingBinary() {
+    bool localBool;
+
+    //Arithemtic mixing uint and sint
+    globalUint  = 5u10* 3s8;
+    globalUint  = 5u8 / 3s10;
+
+    // Arithmetic mixing with bool
+    globalUint  = true + 3u8;
+    globalUint  = 5u8 - false;
+    globalUint  = true * 7u8;
+    globalUint  = 8u8 / false;
+    globalUint  = false % 3u8;
+
+    globalSint  = true + (-2s8);
+    globalSint  = 7s8 - false;
+    globalSint  = false * 2s8;
+    globalSint  = 9s8 / false;
+    globalSint  = false % 4s8;
+
+    // Comparisons mixing int with bool    
+    globalBool  = 3u8 < false;
+    globalBool  = true > (-1s8);
+    globalBool  = 2u8 <= false;
+    globalBool  = false >= 5s8;
+    globalSint  = true == 1u8;
+    globalSint  = 4u8 == localBool;
+
+    // Logical ops on non-bool
+    globalBool  = 5u8 && true;
+    globalBool  = false || 1u8;
+    globalBool  = localBool && 1u8;
+    globalBool  = 1u8 || localBool;
+
+    // Complex expression failures
+    localBool   = (5u8 + localBool) == 8u8 && (2s8 * 2s8) == localBool;
+    localBool   = (11u8 % localBool) < 2u8 || (true && 5u8);
+}

@@ -1,0 +1,30 @@
+bool globalBool;
+u8 globalUint;
+u6 globalSint;
+main() {    
+    throw;
+}
+succeedingObserve() {
+
+    observe true;
+    observe globalBool;
+    observe 8u8 == 8u8;
+    observe 8u8 > 8u8;
+}
+failingObserve(){
+    observe 8u8;
+    observe globalSint;
+    observe 8u8 - 8u8;
+    //observe succeedingQuery();
+}
+succeedingQuery() {
+    u8 local;    
+    query helperValueResult(local);
+}
+failingQuery() {
+    
+    query helperValueResult(globalSint);
+    query helperValue(8u8);    
+}
+helperValueResult(u8 &bar){throw;}
+helperValue(u8 bar){throw;}

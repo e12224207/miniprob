@@ -207,8 +207,9 @@ export class MiniProbValidator {
           if (!skipCompatibility && !isCompatible(paramType, argType)) {
             functionCallErrors.push({
               node: node.argumentList!.arguments[i],
-              message: `Argument type '${typeToString(argType)}' not compatible with '${typeToString(paramType)}'`
+              message: `Argument type '${typeToString(argType)}' cannot be passed to '${typeToString(paramType)}'`
             });
+            skipCompatibility=true;
           }
 
           //value-result parameter have to be matched with references
@@ -221,7 +222,7 @@ export class MiniProbValidator {
             }
 
             //value-result parameters enforce equivalence: argType <=> paramType
-            if (!isCompatible(argType, paramType)) {
+            if (!skipCompatibility && !isCompatible(argType, paramType)) {
               functionCallErrors.push({
                 node: node.argumentList.arguments[i],
                 message: 'Value-result parameter and argument types must match.'
@@ -467,7 +468,7 @@ export class MiniProbValidator {
   checkIntegerLiteral(node: IntegerLiteral, accept: ValidationAcceptor) {
     const cst = node.$cstNode;
     if (!cst) return;
-    if (/^(?![+-]?\d+[uUsS]\d+$).+/.test(cst.text)) {
+    if (cst.length > 1 && /^(?![+-]?\d+[uUsS]\d+$).+/.test(cst.text)) {
       accept('error', 'No spaces are allowed in integer literals', { node });
     }
   }

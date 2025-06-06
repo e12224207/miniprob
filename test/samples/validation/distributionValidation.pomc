@@ -1,0 +1,49 @@
+u8   globalU;
+bool globalB;
+
+main() {
+    throw;
+}
+
+testDistributions() {
+    u8   localU;
+    bool localB;
+    throw;
+}
+
+// ————————————————————————————————————————————————
+// Valid distribution calls
+// ————————————————————————————————————————————————
+succeedingDistributions() {
+    // simple literal bounds
+    globalU = Uniform(0u8, 10u8);
+    globalU = Uniform(5u8, 5u8);
+    globalB = Bernoulli(0u8, 1u8);
+    globalB = Bernoulli(1u8, 4u8);
+
+    // complex arithmetic expressions
+    globalU = Uniform((2u8 + 3u8) * 1u8, 8u8 - globalU);
+    globalU = Uniform(globalU / 2u8, (globalU * 3u8));
+    globalB = Bernoulli((1u8 + 1u8), (2u8 + 2u8) {1u1 : 2u2} 4u4);
+}
+
+// ————————————————————————————————————————————————
+// Invalid distribution calls
+// ————————————————————————————————————————————————
+failingDistributions() {
+    // wrong argument types: bool instead of int
+    globalU = Uniform(true, 10u8);
+    globalU = Uniform(0u8, false);
+    globalB = Bernoulli(true, 1u8);
+    globalB = Bernoulli(0u8, false);
+
+    // out-of-range bounds (low > high)
+    globalU = Uniform(10u8, 0u8);
+    globalB = Bernoulli(5u8, 2u8);
+
+    // incorrect number of arguments
+    globalU = Uniform(0u8);
+    globalU = Uniform(0u8, 1u8, 2u8);
+    globalB = Bernoulli(1u8);
+    globalB = Bernoulli(1u8, 0u8, 1u8);
+}

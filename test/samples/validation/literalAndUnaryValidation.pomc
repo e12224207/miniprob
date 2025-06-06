@@ -1,0 +1,65 @@
+bool globalBool;
+u8 globalUint;
+u8 globalSint;
+main() {    
+    throw;
+}
+succedingLiterals() {
+
+    //validate with literals2^29-1
+    globalBool = true;
+    globalBool = false;
+    globalBool = 0u24;
+    globalBool = 0u1;
+    globalBool = 1u24;
+    globalBool = 1u1;
+    
+    globalUint = 4u4;
+    globalUint = 4s4;
+    globalUint = -2s8;
+    globalUint = +6u8;
+    globalUint = +6s8;
+}
+failingLiterals(){
+    //validate with literals2^29-1    
+    globalUint = 2u1;
+    globalUint = -2u8;
+    globalUint = -;
+    globalUint = +;
+    globalUint = +u8;
+    globalUint = 2;
+    globalUint = 2u12323232322323232323232;   
+    globalUint = 2u536870912;   
+    globalUint = 2 u8;
+    globalUint = - 2s8;
+}
+succeedingUnary() {
+    bool localBool;
+
+    //validate with literals
+    globalBool = !true;
+    globalBool = !false;
+
+    //test with arbitrary values
+    localBool = !(true);
+    localBool = !!!!(true);
+    localBool = !(true || false);
+    localBool = !(5u5 < 5u5);
+    localBool = !(5u5 <= 5u5 && true {1u1 : 2u2} false);
+}
+failingUnary() {
+    bool localBool;
+
+    //validate with literals
+    globalBool = !2u4;
+    globalBool = !4s2;
+    globalUint = !false;
+    globalUint = !4s2;
+
+    //test with arbitrary values
+    globalUint = !(true);
+    globalUint = !!!!(true);
+    localBool = !(2u2 + 5u4 / 8u8);
+    localBool = !(5u5 * 5u5);
+    localBool = !(5u5 % 2u8 {1u1 : 2u2} 8u8);
+}

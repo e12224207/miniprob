@@ -1,0 +1,322 @@
+{
+  "funcCallValidation.pomc": {
+    "64": [
+      "Argument type '[unsigned integer12]' cannot be passed to '[unsigned integer6]'",
+      "Argument type 'unsigned integer16' cannot be passed to 'unsigned integer8'",
+      "Argument type 'unsigned integer16' cannot be passed to 'boolean'",
+      "Argument type '[unsigned integer12]' cannot be passed to '[unsigned integer6]'",
+      "Argument type 'unsigned integer16' cannot be passed to 'unsigned integer8'",
+      "Argument type '[unsigned integer12]' cannot be passed to 'boolean'"
+    ],
+    "65": [
+      "Argument type 'unsigned integer16' cannot be passed to '[unsigned integer6]'",
+      "Argument type 'boolean' cannot be passed to 'unsigned integer8'",
+      "Argument type 'unsigned integer16' cannot be passed to 'boolean'",
+      "Argument type 'boolean' cannot be passed to '[unsigned integer6]'",
+      "Value-result parameter expect named variables.",
+      "Argument type 'boolean' cannot be passed to 'unsigned integer8'",
+      "Value-result parameter expect named variables.",
+      "Argument type 'unsigned integer8' cannot be passed to 'boolean'",
+      "Value-result parameter expect named variables."
+    ],
+    "68": [
+      "Argument type '[unsigned integer12]' cannot be passed to '[unsigned integer6]'",
+      "Argument type 'unsigned integer16' cannot be passed to 'unsigned integer8'",
+      "Argument type 'unsigned integer8' cannot be passed to 'boolean'",
+      "Argument type '[unsigned integer12]' cannot be passed to '[unsigned integer6]'",
+      "Argument type 'boolean' cannot be passed to 'unsigned integer8'",
+      "Value-result parameter expect named variables.",
+      "Argument type '[unsigned integer12]' cannot be passed to 'boolean'"
+    ],
+    "72": [
+      "Argument type '[unsigned integer12]' cannot be passed to '[unsigned integer6]'"
+    ],
+    "73": [
+      "Argument type 'unsigned integer16' cannot be passed to 'unsigned integer8'"
+    ],
+    "75": [
+      "Argument type '[unsigned integer12]' cannot be passed to '[unsigned integer6]'"
+    ],
+    "76": [
+      "Value-result parameter expect named variables.",
+      "Value-result parameter and argument types must match."
+    ],
+    "77": [
+      "Value-result parameter expect named variables."
+    ],
+    "81": [
+      "Argument type '[unsigned integer12]' cannot be passed to '[unsigned integer6]'"
+    ],
+    "82": [
+      "Argument type 'unsigned integer16' cannot be passed to 'unsigned integer8'"
+    ],
+    "84": [
+      "Argument type '[unsigned integer12]' cannot be passed to '[unsigned integer6]'"
+    ],
+    "85": [
+      "Argument type 'unsigned integer16' cannot be passed to 'unsigned integer8'",
+      "Value-result parameter expect named variables."
+    ],
+    "86": [
+      "Value-result parameter expect named variables."
+    ],
+    "94": [
+      "Number of parameters does not match."
+    ],
+    "95": [
+      "Number of parameters does not match."
+    ],
+    "96": [
+      "Value-result parameter expect named variables."
+    ]
+  },
+  "observeAndQueryValidation.pomc": {
+    "14": [
+      "Only boolean expressions can be observed"
+    ],
+    "15": [
+      "Only boolean expressions can be observed"
+    ],
+    "16": [
+      "Only boolean expressions can be observed"
+    ],
+    "25": [
+      "Value-result parameter and argument types must match."
+    ],
+    "26": [
+      "At least one parameter must be value-result(by reference)."
+    ]
+  },
+  "binaryExpressionValidation.pomc": {
+    "59": [
+      "Type signed integer10 is not assignable to unsigned integer8."
+    ],
+    "60": [
+      "Type signed integer10 is not assignable to unsigned integer8."
+    ],
+    "63": [
+      "Could not infer type due to inadequate members.",
+      "The operation '+' cannot be performed on types 'boolean' and 'unsigned integer8'"
+    ],
+    "64": [
+      "Could not infer type due to inadequate members.",
+      "The operation '-' cannot be performed on types 'unsigned integer8' and 'boolean'"
+    ],
+    "65": [
+      "Could not infer type due to inadequate members.",
+      "The operation '*' cannot be performed on types 'boolean' and 'unsigned integer8'"
+    ],
+    "66": [
+      "Could not infer type due to inadequate members.",
+      "The operation '/' cannot be performed on types 'unsigned integer8' and 'boolean'"
+    ],
+    "67": [
+      "Could not infer type due to inadequate members.",
+      "The operation '%' cannot be performed on types 'boolean' and 'unsigned integer8'"
+    ],
+    "69": [
+      "Could not infer type due to inadequate members.",
+      "The operation '+' cannot be performed on types 'boolean' and 'signed integer8'"
+    ],
+    "70": [
+      "Could not infer type due to inadequate members.",
+      "The operation '-' cannot be performed on types 'signed integer8' and 'boolean'"
+    ],
+    "71": [
+      "Could not infer type due to inadequate members.",
+      "The operation '*' cannot be performed on types 'boolean' and 'signed integer8'"
+    ],
+    "72": [
+      "Could not infer type due to inadequate members.",
+      "The operation '/' cannot be performed on types 'signed integer8' and 'boolean'"
+    ],
+    "73": [
+      "Could not infer type due to inadequate members.",
+      "The operation '%' cannot be performed on types 'boolean' and 'signed integer8'"
+    ],
+    "76": [
+      "The operation '<' cannot be performed on types 'unsigned integer8' and 'boolean'"
+    ],
+    "77": [
+      "The operation '>' cannot be performed on types 'boolean' and 'signed integer8'"
+    ],
+    "78": [
+      "The operation '<=' cannot be performed on types 'unsigned integer8' and 'boolean'"
+    ],
+    "79": [
+      "The operation '>=' cannot be performed on types 'boolean' and 'signed integer8'"
+    ],
+    "80": [
+      "Type boolean is not assignable to signed integer8."
+    ],
+    "81": [
+      "Type boolean is not assignable to signed integer8."
+    ],
+    "84": [
+      "The operation '&&' cannot be performed on types 'unsigned integer8' and 'boolean'"
+    ],
+    "85": [
+      "The operation '||' cannot be performed on types 'boolean' and 'unsigned integer8'"
+    ],
+    "86": [
+      "The operation '&&' cannot be performed on types 'boolean' and 'unsigned integer8'"
+    ],
+    "87": [
+      "The operation '||' cannot be performed on types 'unsigned integer8' and 'boolean'"
+    ],
+    "90": [
+      "Could not infer type due to inadequate members.",
+      "The operation '+' cannot be performed on types 'unsigned integer8' and 'boolean'"
+    ],
+    "91": [
+      "Could not infer type due to inadequate members.",
+      "The operation '%' cannot be performed on types 'unsigned integer8' and 'boolean'",
+      "The operation '&&' cannot be performed on types 'boolean' and 'unsigned integer8'"
+    ]
+  },
+  "distributionValidation.pomc": {
+    "34": [
+      "Argument type 'boolean' not compatible with 'integer'"
+    ],
+    "35": [
+      "Unable to wholly infer type due to conflicting or missing upper limit",
+      "Argument type 'boolean' not compatible with 'integer'"
+    ],
+    "36": [
+      "Argument type 'boolean' not compatible with 'integer'"
+    ],
+    "37": [
+      "Argument type 'boolean' not compatible with 'integer'"
+    ],
+    "44": [
+      "Expecting token of type ',' but found `)`.",
+      "Expecting token of type ';' but found `)`.",
+      "Unable to wholly infer type due to conflicting or missing upper limit",
+      "Distributions expect two arguments"
+    ],
+    "45": [
+      "Expecting token of type ')' but found `,`.",
+      "Expecting token of type ';' but found `,`.",
+      "Expecting token of type '}' but found `,`.",
+      "Expecting token of type 'EOF' but found `,`."
+    ],
+    "46": [
+      "Expecting token of type '(' but found `=`.",
+      "Expecting token of type 'EOF' but found `=`.",
+      "Function with name globalB already exists"
+    ],
+    "47": [
+      "Expecting token of type '(' but found `=`.",
+      "Expecting token of type 'EOF' but found `=`.",
+      "Function with name globalB already exists"
+    ]
+  },
+  "literalAndUnaryValidation.pomc": {
+    "24": [
+      "Value 2 does not fit into integer with width 1"
+    ],
+    "25": [
+      "Negatives value cannot be stored in unsigned integer"
+    ],
+    "26": [
+      "Expecting token of type 'INT' but found `;`.",
+      "Incomplete integer literal"
+    ],
+    "27": [
+      "Expecting token of type 'INT' but found `;`.",
+      "Incomplete integer literal"
+    ],
+    "28": [
+      "Expecting token of type 'INT' but found `u8`.",
+      "Incomplete integer literal",
+      "No spaces are allowed in integer literals"
+    ],
+    "29": [
+      "Expecting token of type 'INT_PREFIX' but found `;`.",
+      "Incomplete integer literal"
+    ],
+    "30": [
+      "Expecting token of type ';' but found `22323232323232`.",
+      "Type unsigned integer123232323 is not assignable to unsigned integer8."
+    ],
+    "31": [
+      "The wisth of integers can only be up to (2^29)-1"
+    ],
+    "32": [
+      "No spaces are allowed in integer literals"
+    ],
+    "33": [
+      "No spaces are allowed in integer literals"
+    ],
+    "53": [
+      "The operation '!' is not possible on type 'unsigned integer4'"
+    ],
+    "54": [
+      "Value 4 does not fit into integer with width 2"
+    ],
+    "55": [
+      "Type boolean is not assignable to unsigned integer8."
+    ],
+    "56": [
+      "Type boolean is not assignable to unsigned integer8.",
+      "Value 4 does not fit into integer with width 2"
+    ],
+    "59": [
+      "Type boolean is not assignable to unsigned integer8."
+    ],
+    "60": [
+      "Type boolean is not assignable to unsigned integer8."
+    ],
+    "61": [
+      "The operation '!' is not possible on type 'unsigned integer8'"
+    ],
+    "62": [
+      "The operation '!' is not possible on type 'unsigned integer5'"
+    ],
+    "63": [
+      "The operation '!' is not possible on type 'unsigned integer8'"
+    ]
+  },
+  "probabilisticAssignmentValidation.pomc": {
+    "45": [
+      "Probability value must be 0...1 and cannot be negative"
+    ],
+    "46": [
+      "Division by 0 not possible"
+    ],
+    "47": [
+      "Possible results do not fit expected type of 'signed integer6'."
+    ],
+    "48": [
+      "This operation ':' is not possible with types 'unsigned integer2' and 'boolean'"
+    ],
+    "49": [
+      "This operation ':' is not possible with types 'boolean' and 'boolean'"
+    ],
+    "52": [
+      "Expecting: one of these possible Token sequences:\n  1. [!]\n  2. [BOOL]\n  3. [+]\n  4. [-]\n  5. [INT]\n  6. [ID]\n  7. [(]\nbut found: ';'"
+    ],
+    "53": [
+      "Expecting: one of these possible Token sequences:\n  1. [Bernoulli]\n  2. [Uniform]\n  3. [!]\n  4. [BOOL]\n  5. [+]\n  6. [-]\n  7. [INT]\n  8. [ID]\n  9. [(]\nbut found: '{'",
+      "Expecting token of type ';' but found `{`.",
+      "Expecting token of type '}' but found `{`.",
+      "Expecting token of type 'EOF' but found `{`.",
+      "Could not infer type for undefined"
+    ],
+    "54": [
+      "Expecting token of type '(' but found `=`.",
+      "Expecting token of type 'EOF' but found `=`.",
+      "Function with name localBool already exists"
+    ],
+    "55": [
+      "Expecting token of type '(' but found `=`.",
+      "Expecting token of type 'EOF' but found `=`.",
+      "Function with name localBool already exists"
+    ],
+    "56": [
+      "Expecting token of type '(' but found `=`.",
+      "Expecting token of type 'EOF' but found `=`.",
+      "Function with name localBool already exists"
+    ]
+  }
+}
