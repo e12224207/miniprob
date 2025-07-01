@@ -1,7 +1,7 @@
 {
   "name": "mini-prob",
   "description": "Please enter a brief description here",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "files": [
     "bin",
     "out",
@@ -91,7 +91,7 @@
   "activationEvents": [
     "onLanguage:mini-prob"
   ],
-  "main": "./out/extension/main",
+  "main": "./out/extension/main.js",
   "bin": {
     "mini-prob-cli": "./bin/cli.js"
   },
