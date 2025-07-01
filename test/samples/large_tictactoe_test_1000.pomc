@@ -1,0 +1,1099 @@
+u2[3] upper; // line 1
+u2[3] middle; // line 2
+u2[3] lower; // line 3
+u2 final_winner; // line 4
+
+/*   // line 6
+    0 = non assigned // line 7
+    1 = circle (player 1) // line 8
+    2 = cross (player 2) // line 9
+    Initial Condition:  // line 10
+    |   | O |   | // line 11
+    | O | X | X | // line 12
+    |   | O |   | // line 13
+Reference: A. Stuhlmueller, N.D. Goodman, Reasoning about Reasoning by Nested Conditioning: Modeling Theory of Mind with Probabilistic Programs, Cognitive Systems Research 2014. // line 14
+*/  // line 15
+
+main (){ // line 17
+    u2 row_choice, column_choice; // line 18
+    upper[0u2] = 0u2; // line 19
+	upper[1u2] = 1u2; // line 20
+	upper[2u2] = 0u2; // line 21
+    middle[0u2] = 1u2; // line 22
+	middle[1u2] = 2u2; // line 23
+	middle[2u2] = 2u2; // line 24
+    lower[0u2] = 0u2; // line 25
+	lower[1u2] = 1u2; // line 26
+	lower[2u2] = 0u2; // line 27
+
+    final_winner = 0u2; // line 29
+    query sampleAction(2u2, row_choice, column_choice); // line 30
+
+} // line 32
+
+sampleAction(u2 current_player, u2 &row_choice, u2 &column_choice) { // line 34
+    bool another_turn; // line 35
+    u2 other_player; // line 36
+    u2 otherPlayerRowChoice, otherPlayerColumnChoice;  // line 37
+    
+    // sample a choice from the priori // line 39
+    query action_priori(current_player, row_choice, column_choice); // line 40
+    
+    // is there a final_winner or is the grid filled? // line 42
+    another_turn = upper[0u2] == 0u2 || upper[1u2] == 0u2 || upper[2u2] == 0u2 || middle[0u2] == 0u2 || middle[1u2] == 0u2 || middle[2u2] == 0u2 || lower[0u2] == 0u2 || lower[1u2] == 0u2 || lower[2u2] == 0u2; // line 43
+    winning_condition(); // line 44
+
+    // if nobody has won and there is another turn to play... // line 46
+    if (final_winner == 0u2 && another_turn) {     // line 47
+        // passing the turn // line 48
+        if (current_player == 1u2) { // line 49
+            other_player = 2u2; // line 50
+        } else { // line 51
+            other_player = 1u2; // line 52
+        } // line 53
+        query sampleAction(other_player, otherPlayerRowChoice, otherPlayerColumnChoice); // line 54
+
+    } else {} // line 56
+
+    // observing according to the utility of the outcome // line 58
+    expected_utility(current_player); // line 59
+
+    // returning row_choice and column_choice - the choice of the player // line 61
+} // line 62
+
+
+action_priori(u2 current_player, u2 &row_choice, u2 &column_choice) { // line 65
+    u2 sampled_row_choice, sampled_column_choice; // line 66
+
+    sampled_row_choice = 0u2 {1u2 : 3u2} 1u2 {1u2: 3u2} 2u2; // line 68
+    sampled_column_choice = 0u2 {1u2 : 3u2} 1u2 {1u2: 3u2} 2u2; // line 69
+
+    // observe that the choice is feasible, and update the grid // line 71
+    if (sampled_row_choice == 0u2) { // line 72
+        observe upper[sampled_column_choice] == 0u2; // line 73
+        upper[sampled_column_choice] = current_player; // line 74
+    } else { // line 75
+        if (sampled_row_choice == 1u2) { // line 76
+            observe middle[sampled_column_choice] == 0u2; // line 77
+            middle[sampled_column_choice] = current_player; // line 78
+        } else { // line 79
+            observe lower[sampled_column_choice] == 0u2; // line 80
+            lower[sampled_column_choice] = current_player; // line 81
+        } // line 82
+    } // line 83
+    row_choice = sampled_row_choice; // line 84
+    column_choice = sampled_column_choice; // line 85
+} // line 86
+
+expected_utility(u2 current_player) { // line 88
+    bool coin_flip; // line 89
+    u4 utility; // line 90
+
+    if (final_winner == current_player) { // line 92
+        utility = 10u4; // line 93
+    } else { // line 94
+        if (final_winner == 0u2) { // line 95
+        utility = 5u4; // line 96
+        } else { // line 97
+            utility = 1u4; // line 98
+        } // line 99
+    } // line 100
+
+    // outcome should range from 0 to 10 // line 102
+    coin_flip = 1u1 {utility : 10u4} 0u1; // line 103
+    observe coin_flip; // line 104
+} // line 105
+
+winning_condition() { // line 107
+    if (upper[0u2] == upper[1u2] && upper[1u2] == upper[2u2]) { // line 108
+        final_winner = upper[0u2]; // line 109
+    } else { // line 110
+        if (middle[0u2] == middle[1u2] && middle[1u2] == middle[2u2]) { // line 111
+            final_winner = middle[0u2]; // line 112
+        } else { // line 113
+            if (lower[0u2] == lower[1u2] && lower[1u2] == lower[2u2]) { // line 114
+                final_winner = lower[0u2]; // line 115
+            } else { // line 116
+                if (upper[0u2] == middle[0u2] && middle[0u2] == lower[0u2]) { // line 117
+                    final_winner = upper[0u2]; // line 118
+                } else { // line 119
+                    if (upper[1u2] == middle[1u2] && middle[1u2] == lower[1u2]) { // line 120
+                        final_winner = upper[1u2]; // line 121
+                    } else { // line 122
+                        if (upper[2u2] == middle[2u2] && middle[2u2] == lower[2u2]) { // line 123
+                            final_winner = upper[2u2]; // line 124
+                        } else { // line 125
+                            if (upper[0u2] == middle[1u2] && middle[1u2] == lower[2u2]) { // line 126
+                                final_winner = upper[0u2]; // line 127
+                            } else { // line 128
+                                if (upper[2u2] == middle[1u2] && middle[1u2] == lower[0u2]) { // line 129
+                                    final_winner = upper[2u2]; // line 130
+                                } else { // line 131
+                                    final_winner = 0u2; // line 132
+                                } // line 133
+                            } // line 134
+                        } // line 135
+                    } // line 136
+                } // line 137
+            } // line 138
+        } // line 139
+    } // line 140
+} // line 141
+/*   // line 147
+    0 = non assigned // line 148
+    1 = circle (player 1) // line 149
+    2 = cross (player 2) // line 150
+    Initial Condition:  // line 151
+    |   | O |   | // line 152
+    | O | X | X | // line 153
+    |   | O |   | // line 154
+Reference: A. Stuhlmueller, N.D. Goodman, Reasoning about Reasoning by Nested Conditioning: Modeling Theory of Mind with Probabilistic Programs, Cognitive Systems Research 2014. // line 155
+*/  // line 156
+
+main (){ // line 158
+    u2 row_choice, column_choice; // line 159
+    upper[0u2] = 0u2; // line 160
+	upper[1u2] = 1u2; // line 161
+	upper[2u2] = 0u2; // line 162
+    middle[0u2] = 1u2; // line 163
+	middle[1u2] = 2u2; // line 164
+	middle[2u2] = 2u2; // line 165
+    lower[0u2] = 0u2; // line 166
+	lower[1u2] = 1u2; // line 167
+	lower[2u2] = 0u2; // line 168
+
+    final_winner = 0u2; // line 170
+    query sampleAction(2u2, row_choice, column_choice); // line 171
+
+} // line 173
+
+sampleAction(u2 current_player, u2 &row_choice, u2 &column_choice) { // line 175
+    bool another_turn; // line 176
+    u2 other_player; // line 177
+    u2 otherPlayerRowChoice, otherPlayerColumnChoice;  // line 178
+    
+    // sample a choice from the priori // line 180
+    query action_priori(current_player, row_choice, column_choice); // line 181
+    
+    // is there a final_winner or is the grid filled? // line 183
+    another_turn = upper[0u2] == 0u2 || upper[1u2] == 0u2 || upper[2u2] == 0u2 || middle[0u2] == 0u2 || middle[1u2] == 0u2 || middle[2u2] == 0u2 || lower[0u2] == 0u2 || lower[1u2] == 0u2 || lower[2u2] == 0u2; // line 184
+    winning_condition(); // line 185
+
+    // if nobody has won and there is another turn to play... // line 187
+    if (final_winner == 0u2 && another_turn) {     // line 188
+        // passing the turn // line 189
+        if (current_player == 1u2) { // line 190
+            other_player = 2u2; // line 191
+        } else { // line 192
+            other_player = 1u2; // line 193
+        } // line 194
+        query sampleAction(other_player, otherPlayerRowChoice, otherPlayerColumnChoice); // line 195
+
+    } else {} // line 197
+
+    // observing according to the utility of the outcome // line 199
+    expected_utility(current_player); // line 200
+
+    // returning row_choice and column_choice - the choice of the player // line 202
+} // line 203
+
+
+action_priori(u2 current_player, u2 &row_choice, u2 &column_choice) { // line 206
+    u2 sampled_row_choice, sampled_column_choice; // line 207
+
+    sampled_row_choice = 0u2 {1u2 : 3u2} 1u2 {1u2: 3u2} 2u2; // line 209
+    sampled_column_choice = 0u2 {1u2 : 3u2} 1u2 {1u2: 3u2} 2u2; // line 210
+
+    // observe that the choice is feasible, and update the grid // line 212
+    if (sampled_row_choice == 0u2) { // line 213
+        observe upper[sampled_column_choice] == 0u2; // line 214
+        upper[sampled_column_choice] = current_player; // line 215
+    } else { // line 216
+        if (sampled_row_choice == 1u2) { // line 217
+            observe middle[sampled_column_choice] == 0u2; // line 218
+            middle[sampled_column_choice] = current_player; // line 219
+        } else { // line 220
+            observe lower[sampled_column_choice] == 0u2; // line 221
+            lower[sampled_column_choice] = current_player; // line 222
+        } // line 223
+    } // line 224
+    row_choice = sampled_row_choice; // line 225
+    column_choice = sampled_column_choice; // line 226
+} // line 227
+
+expected_utility(u2 current_player) { // line 229
+    bool coin_flip; // line 230
+    u4 utility; // line 231
+
+    if (final_winner == current_player) { // line 233
+        utility = 10u4; // line 234
+    } else { // line 235
+        if (final_winner == 0u2) { // line 236
+        utility = 5u4; // line 237
+        } else { // line 238
+            utility = 1u4; // line 239
+        } // line 240
+    } // line 241
+
+    // outcome should range from 0 to 10 // line 243
+    coin_flip = 1u1 {utility : 10u4} 0u1; // line 244
+    observe coin_flip; // line 245
+} // line 246
+
+winning_condition() { // line 248
+    if (upper[0u2] == upper[1u2] && upper[1u2] == upper[2u2]) { // line 249
+        final_winner = upper[0u2]; // line 250
+    } else { // line 251
+        if (middle[0u2] == middle[1u2] && middle[1u2] == middle[2u2]) { // line 252
+            final_winner = middle[0u2]; // line 253
+        } else { // line 254
+            if (lower[0u2] == lower[1u2] && lower[1u2] == lower[2u2]) { // line 255
+                final_winner = lower[0u2]; // line 256
+            } else { // line 257
+                if (upper[0u2] == middle[0u2] && middle[0u2] == lower[0u2]) { // line 258
+                    final_winner = upper[0u2]; // line 259
+                } else { // line 260
+                    if (upper[1u2] == middle[1u2] && middle[1u2] == lower[1u2]) { // line 261
+                        final_winner = upper[1u2]; // line 262
+                    } else { // line 263
+                        if (upper[2u2] == middle[2u2] && middle[2u2] == lower[2u2]) { // line 264
+                            final_winner = upper[2u2]; // line 265
+                        } else { // line 266
+                            if (upper[0u2] == middle[1u2] && middle[1u2] == lower[2u2]) { // line 267
+                                final_winner = upper[0u2]; // line 268
+                            } else { // line 269
+                                if (upper[2u2] == middle[1u2] && middle[1u2] == lower[0u2]) { // line 270
+                                    final_winner = upper[2u2]; // line 271
+                                } else { // line 272
+                                    final_winner = 0u2; // line 273
+                                } // line 274
+                            } // line 275
+                        } // line 276
+                    } // line 277
+                } // line 278
+            } // line 279
+        } // line 280
+    } // line 281
+} // line 282
+
+/*   // line 288
+    0 = non assigned // line 289
+    1 = circle (player 1) // line 290
+    2 = cross (player 2) // line 291
+    Initial Condition:  // line 292
+    |   | O |   | // line 293
+    | O | X | X | // line 294
+    |   | O |   | // line 295
+Reference: A. Stuhlmueller, N.D. Goodman, Reasoning about Reasoning by Nested Conditioning: Modeling Theory of Mind with Probabilistic Programs, Cognitive Systems Research 2014. // line 296
+*/  // line 297
+
+main (){ // line 299
+    u2 row_choice, column_choice; // line 300
+    upper[0u2] = 0u2; // line 301
+	upper[1u2] = 1u2; // line 302
+	upper[2u2] = 0u2; // line 303
+    middle[0u2] = 1u2; // line 304
+	middle[1u2] = 2u2; // line 305
+	middle[2u2] = 2u2; // line 306
+    lower[0u2] = 0u2; // line 307
+	lower[1u2] = 1u2; // line 308
+	lower[2u2] = 0u2; // line 309
+
+    final_winner = 0u2; // line 311
+    query sampleAction(2u2, row_choice, column_choice); // line 312
+
+} // line 314
+
+sampleAction(u2 current_player, u2 &row_choice, u2 &column_choice) { // line 316
+    bool another_turn; // line 317
+    u2 other_player; // line 318
+    u2 otherPlayerRowChoice, otherPlayerColumnChoice;  // line 319
+    
+    // sample a choice from the priori // line 321
+    query action_priori(current_player, row_choice, column_choice); // line 322
+    
+    // is there a final_winner or is the grid filled? // line 324
+    another_turn = upper[0u2] == 0u2 || upper[1u2] == 0u2 || upper[2u2] == 0u2 || middle[0u2] == 0u2 || middle[1u2] == 0u2 || middle[2u2] == 0u2 || lower[0u2] == 0u2 || lower[1u2] == 0u2 || lower[2u2] == 0u2; // line 325
+    winning_condition(); // line 326
+
+    // if nobody has won and there is another turn to play... // line 328
+    if (final_winner == 0u2 && another_turn) {     // line 329
+        // passing the turn // line 330
+        if (current_player == 1u2) { // line 331
+            other_player = 2u2; // line 332
+        } else { // line 333
+            other_player = 1u2; // line 334
+        } // line 335
+        query sampleAction(other_player, otherPlayerRowChoice, otherPlayerColumnChoice); // line 336
+
+    } else {} // line 338
+
+    // observing according to the utility of the outcome // line 340
+    expected_utility(current_player); // line 341
+
+    // returning row_choice and column_choice - the choice of the player // line 343
+} // line 344
+
+
+action_priori(u2 current_player, u2 &row_choice, u2 &column_choice) { // line 347
+    u2 sampled_row_choice, sampled_column_choice; // line 348
+
+    sampled_row_choice = 0u2 {1u2 : 3u2} 1u2 {1u2: 3u2} 2u2; // line 350
+    sampled_column_choice = 0u2 {1u2 : 3u2} 1u2 {1u2: 3u2} 2u2; // line 351
+
+    // observe that the choice is feasible, and update the grid // line 353
+    if (sampled_row_choice == 0u2) { // line 354
+        observe upper[sampled_column_choice] == 0u2; // line 355
+        upper[sampled_column_choice] = current_player; // line 356
+    } else { // line 357
+        if (sampled_row_choice == 1u2) { // line 358
+            observe middle[sampled_column_choice] == 0u2; // line 359
+            middle[sampled_column_choice] = current_player; // line 360
+        } else { // line 361
+            observe lower[sampled_column_choice] == 0u2; // line 362
+            lower[sampled_column_choice] = current_player; // line 363
+        } // line 364
+    } // line 365
+    row_choice = sampled_row_choice; // line 366
+    column_choice = sampled_column_choice; // line 367
+} // line 368
+
+expected_utility(u2 current_player) { // line 370
+    bool coin_flip; // line 371
+    u4 utility; // line 372
+
+    if (final_winner == current_player) { // line 374
+        utility = 10u4; // line 375
+    } else { // line 376
+        if (final_winner == 0u2) { // line 377
+        utility = 5u4; // line 378
+        } else { // line 379
+            utility = 1u4; // line 380
+        } // line 381
+    } // line 382
+
+    // outcome should range from 0 to 10 // line 384
+    coin_flip = 1u1 {utility : 10u4} 0u1; // line 385
+    observe coin_flip; // line 386
+} // line 387
+
+winning_condition() { // line 389
+    if (upper[0u2] == upper[1u2] && upper[1u2] == upper[2u2]) { // line 390
+        final_winner = upper[0u2]; // line 391
+    } else { // line 392
+        if (middle[0u2] == middle[1u2] && middle[1u2] == middle[2u2]) { // line 393
+            final_winner = middle[0u2]; // line 394
+        } else { // line 395
+            if (lower[0u2] == lower[1u2] && lower[1u2] == lower[2u2]) { // line 396
+                final_winner = lower[0u2]; // line 397
+            } else { // line 398
+                if (upper[0u2] == middle[0u2] && middle[0u2] == lower[0u2]) { // line 399
+                    final_winner = upper[0u2]; // line 400
+                } else { // line 401
+                    if (upper[1u2] == middle[1u2] && middle[1u2] == lower[1u2]) { // line 402
+                        final_winner = upper[1u2]; // line 403
+                    } else { // line 404
+                        if (upper[2u2] == middle[2u2] && middle[2u2] == lower[2u2]) { // line 405
+                            final_winner = upper[2u2]; // line 406
+                        } else { // line 407
+                            if (upper[0u2] == middle[1u2] && middle[1u2] == lower[2u2]) { // line 408
+                                final_winner = upper[0u2]; // line 409
+                            } else { // line 410
+                                if (upper[2u2] == middle[1u2] && middle[1u2] == lower[0u2]) { // line 411
+                                    final_winner = upper[2u2]; // line 412
+                                } else { // line 413
+                                    final_winner = 0u2; // line 414
+                                } // line 415
+                            } // line 416
+                        } // line 417
+                    } // line 418
+                } // line 419
+            } // line 420
+        } // line 421
+    } // line 422
+} // line 423
+
+/*   // line 429
+    0 = non assigned // line 430
+    1 = circle (player 1) // line 431
+    2 = cross (player 2) // line 432
+    Initial Condition:  // line 433
+    |   | O |   | // line 434
+    | O | X | X | // line 435
+    |   | O |   | // line 436
+Reference: A. Stuhlmueller, N.D. Goodman, Reasoning about Reasoning by Nested Conditioning: Modeling Theory of Mind with Probabilistic Programs, Cognitive Systems Research 2014. // line 437
+*/  // line 438
+
+main (){ // line 440
+    u2 row_choice, column_choice; // line 441
+    upper[0u2] = 0u2; // line 442
+	upper[1u2] = 1u2; // line 443
+	upper[2u2] = 0u2; // line 444
+    middle[0u2] = 1u2; // line 445
+	middle[1u2] = 2u2; // line 446
+	middle[2u2] = 2u2; // line 447
+    lower[0u2] = 0u2; // line 448
+	lower[1u2] = 1u2; // line 449
+	lower[2u2] = 0u2; // line 450
+
+    final_winner = 0u2; // line 452
+    query sampleAction(2u2, row_choice, column_choice); // line 453
+
+} // line 455
+
+sampleAction(u2 current_player, u2 &row_choice, u2 &column_choice) { // line 457
+    bool another_turn; // line 458
+    u2 other_player; // line 459
+    u2 otherPlayerRowChoice, otherPlayerColumnChoice;  // line 460
+    
+    // sample a choice from the priori // line 462
+    query action_priori(current_player, row_choice, column_choice); // line 463
+    
+    // is there a final_winner or is the grid filled? // line 465
+    another_turn = upper[0u2] == 0u2 || upper[1u2] == 0u2 || upper[2u2] == 0u2 || middle[0u2] == 0u2 || middle[1u2] == 0u2 || middle[2u2] == 0u2 || lower[0u2] == 0u2 || lower[1u2] == 0u2 || lower[2u2] == 0u2; // line 466
+    winning_condition(); // line 467
+
+    // if nobody has won and there is another turn to play... // line 469
+    if (final_winner == 0u2 && another_turn) {     // line 470
+        // passing the turn // line 471
+        if (current_player == 1u2) { // line 472
+            other_player = 2u2; // line 473
+        } else { // line 474
+            other_player = 1u2; // line 475
+        } // line 476
+        query sampleAction(other_player, otherPlayerRowChoice, otherPlayerColumnChoice); // line 477
+
+    } else {} // line 479
+
+    // observing according to the utility of the outcome // line 481
+    expected_utility(current_player); // line 482
+
+    // returning row_choice and column_choice - the choice of the player // line 484
+} // line 485
+
+
+action_priori(u2 current_player, u2 &row_choice, u2 &column_choice) { // line 488
+    u2 sampled_row_choice, sampled_column_choice; // line 489
+
+    sampled_row_choice = 0u2 {1u2 : 3u2} 1u2 {1u2: 3u2} 2u2; // line 491
+    sampled_column_choice = 0u2 {1u2 : 3u2} 1u2 {1u2: 3u2} 2u2; // line 492
+
+    // observe that the choice is feasible, and update the grid // line 494
+    if (sampled_row_choice == 0u2) { // line 495
+        observe upper[sampled_column_choice] == 0u2; // line 496
+        upper[sampled_column_choice] = current_player; // line 497
+    } else { // line 498
+        if (sampled_row_choice == 1u2) { // line 499
+            observe middle[sampled_column_choice] == 0u2; // line 500
+            middle[sampled_column_choice] = current_player; // line 501
+        } else { // line 502
+            observe lower[sampled_column_choice] == 0u2; // line 503
+            lower[sampled_column_choice] = current_player; // line 504
+        } // line 505
+    } // line 506
+    row_choice = sampled_row_choice; // line 507
+    column_choice = sampled_column_choice; // line 508
+} // line 509
+
+expected_utility(u2 current_player) { // line 511
+    bool coin_flip; // line 512
+    u4 utility; // line 513
+
+    if (final_winner == current_player) { // line 515
+        utility = 10u4; // line 516
+    } else { // line 517
+        if (final_winner == 0u2) { // line 518
+        utility = 5u4; // line 519
+        } else { // line 520
+            utility = 1u4; // line 521
+        } // line 522
+    } // line 523
+
+    // outcome should range from 0 to 10 // line 525
+    coin_flip = 1u1 {utility : 10u4} 0u1; // line 526
+    observe coin_flip; // line 527
+} // line 528
+
+winning_condition() { // line 530
+    if (upper[0u2] == upper[1u2] && upper[1u2] == upper[2u2]) { // line 531
+        final_winner = upper[0u2]; // line 532
+    } else { // line 533
+        if (middle[0u2] == middle[1u2] && middle[1u2] == middle[2u2]) { // line 534
+            final_winner = middle[0u2]; // line 535
+        } else { // line 536
+            if (lower[0u2] == lower[1u2] && lower[1u2] == lower[2u2]) { // line 537
+                final_winner = lower[0u2]; // line 538
+            } else { // line 539
+                if (upper[0u2] == middle[0u2] && middle[0u2] == lower[0u2]) { // line 540
+                    final_winner = upper[0u2]; // line 541
+                } else { // line 542
+                    if (upper[1u2] == middle[1u2] && middle[1u2] == lower[1u2]) { // line 543
+                        final_winner = upper[1u2]; // line 544
+                    } else { // line 545
+                        if (upper[2u2] == middle[2u2] && middle[2u2] == lower[2u2]) { // line 546
+                            final_winner = upper[2u2]; // line 547
+                        } else { // line 548
+                            if (upper[0u2] == middle[1u2] && middle[1u2] == lower[2u2]) { // line 549
+                                final_winner = upper[0u2]; // line 550
+                            } else { // line 551
+                                if (upper[2u2] == middle[1u2] && middle[1u2] == lower[0u2]) { // line 552
+                                    final_winner = upper[2u2]; // line 553
+                                } else { // line 554
+                                    final_winner = 0u2; // line 555
+                                } // line 556
+                            } // line 557
+                        } // line 558
+                    } // line 559
+                } // line 560
+            } // line 561
+        } // line 562
+    } // line 563
+} // line 564
+
+/*   // line 570
+    0 = non assigned // line 571
+    1 = circle (player 1) // line 572
+    2 = cross (player 2) // line 573
+    Initial Condition:  // line 574
+    |   | O |   | // line 575
+    | O | X | X | // line 576
+    |   | O |   | // line 577
+Reference: A. Stuhlmueller, N.D. Goodman, Reasoning about Reasoning by Nested Conditioning: Modeling Theory of Mind with Probabilistic Programs, Cognitive Systems Research 2014. // line 578
+*/  // line 579
+
+main (){ // line 581
+    u2 row_choice, column_choice; // line 582
+    upper[0u2] = 0u2; // line 583
+	upper[1u2] = 1u2; // line 584
+	upper[2u2] = 0u2; // line 585
+    middle[0u2] = 1u2; // line 586
+	middle[1u2] = 2u2; // line 587
+	middle[2u2] = 2u2; // line 588
+    lower[0u2] = 0u2; // line 589
+	lower[1u2] = 1u2; // line 590
+	lower[2u2] = 0u2; // line 591
+
+    final_winner = 0u2; // line 593
+    query sampleAction(2u2, row_choice, column_choice); // line 594
+
+} // line 596
+
+sampleAction(u2 current_player, u2 &row_choice, u2 &column_choice) { // line 598
+    bool another_turn; // line 599
+    u2 other_player; // line 600
+    u2 otherPlayerRowChoice, otherPlayerColumnChoice;  // line 601
+    
+    // sample a choice from the priori // line 603
+    query action_priori(current_player, row_choice, column_choice); // line 604
+    
+    // is there a final_winner or is the grid filled? // line 606
+    another_turn = upper[0u2] == 0u2 || upper[1u2] == 0u2 || upper[2u2] == 0u2 || middle[0u2] == 0u2 || middle[1u2] == 0u2 || middle[2u2] == 0u2 || lower[0u2] == 0u2 || lower[1u2] == 0u2 || lower[2u2] == 0u2; // line 607
+    winning_condition(); // line 608
+
+    // if nobody has won and there is another turn to play... // line 610
+    if (final_winner == 0u2 && another_turn) {     // line 611
+        // passing the turn // line 612
+        if (current_player == 1u2) { // line 613
+            other_player = 2u2; // line 614
+        } else { // line 615
+            other_player = 1u2; // line 616
+        } // line 617
+        query sampleAction(other_player, otherPlayerRowChoice, otherPlayerColumnChoice); // line 618
+
+    } else {} // line 620
+
+    // observing according to the utility of the outcome // line 622
+    expected_utility(current_player); // line 623
+
+    // returning row_choice and column_choice - the choice of the player // line 625
+} // line 626
+
+
+action_priori(u2 current_player, u2 &row_choice, u2 &column_choice) { // line 629
+    u2 sampled_row_choice, sampled_column_choice; // line 630
+
+    sampled_row_choice = 0u2 {1u2 : 3u2} 1u2 {1u2: 3u2} 2u2; // line 632
+    sampled_column_choice = 0u2 {1u2 : 3u2} 1u2 {1u2: 3u2} 2u2; // line 633
+
+    // observe that the choice is feasible, and update the grid // line 635
+    if (sampled_row_choice == 0u2) { // line 636
+        observe upper[sampled_column_choice] == 0u2; // line 637
+        upper[sampled_column_choice] = current_player; // line 638
+    } else { // line 639
+        if (sampled_row_choice == 1u2) { // line 640
+            observe middle[sampled_column_choice] == 0u2; // line 641
+            middle[sampled_column_choice] = current_player; // line 642
+        } else { // line 643
+            observe lower[sampled_column_choice] == 0u2; // line 644
+            lower[sampled_column_choice] = current_player; // line 645
+        } // line 646
+    } // line 647
+    row_choice = sampled_row_choice; // line 648
+    column_choice = sampled_column_choice; // line 649
+} // line 650
+
+expected_utility(u2 current_player) { // line 652
+    bool coin_flip; // line 653
+    u4 utility; // line 654
+
+    if (final_winner == current_player) { // line 656
+        utility = 10u4; // line 657
+    } else { // line 658
+        if (final_winner == 0u2) { // line 659
+        utility = 5u4; // line 660
+        } else { // line 661
+            utility = 1u4; // line 662
+        } // line 663
+    } // line 664
+
+    // outcome should range from 0 to 10 // line 666
+    coin_flip = 1u1 {utility : 10u4} 0u1; // line 667
+    observe coin_flip; // line 668
+} // line 669
+
+winning_condition() { // line 671
+    if (upper[0u2] == upper[1u2] && upper[1u2] == upper[2u2]) { // line 672
+        final_winner = upper[0u2]; // line 673
+    } else { // line 674
+        if (middle[0u2] == middle[1u2] && middle[1u2] == middle[2u2]) { // line 675
+            final_winner = middle[0u2]; // line 676
+        } else { // line 677
+            if (lower[0u2] == lower[1u2] && lower[1u2] == lower[2u2]) { // line 678
+                final_winner = lower[0u2]; // line 679
+            } else { // line 680
+                if (upper[0u2] == middle[0u2] && middle[0u2] == lower[0u2]) { // line 681
+                    final_winner = upper[0u2]; // line 682
+                } else { // line 683
+                    if (upper[1u2] == middle[1u2] && middle[1u2] == lower[1u2]) { // line 684
+                        final_winner = upper[1u2]; // line 685
+                    } else { // line 686
+                        if (upper[2u2] == middle[2u2] && middle[2u2] == lower[2u2]) { // line 687
+                            final_winner = upper[2u2]; // line 688
+                        } else { // line 689
+                            if (upper[0u2] == middle[1u2] && middle[1u2] == lower[2u2]) { // line 690
+                                final_winner = upper[0u2]; // line 691
+                            } else { // line 692
+                                if (upper[2u2] == middle[1u2] && middle[1u2] == lower[0u2]) { // line 693
+                                    final_winner = upper[2u2]; // line 694
+                                } else { // line 695
+                                    final_winner = 0u2; // line 696
+                                } // line 697
+                            } // line 698
+                        } // line 699
+                    } // line 700
+                } // line 701
+            } // line 702
+        } // line 703
+    } // line 704
+} // line 705
+
+/*   // line 711
+    0 = non assigned // line 712
+    1 = circle (player 1) // line 713
+    2 = cross (player 2) // line 714
+    Initial Condition:  // line 715
+    |   | O |   | // line 716
+    | O | X | X | // line 717
+    |   | O |   | // line 718
+Reference: A. Stuhlmueller, N.D. Goodman, Reasoning about Reasoning by Nested Conditioning: Modeling Theory of Mind with Probabilistic Programs, Cognitive Systems Research 2014. // line 719
+*/  // line 720
+
+main (){ // line 722
+    u2 row_choice, column_choice; // line 723
+    upper[0u2] = 0u2; // line 724
+	upper[1u2] = 1u2; // line 725
+	upper[2u2] = 0u2; // line 726
+    middle[0u2] = 1u2; // line 727
+	middle[1u2] = 2u2; // line 728
+	middle[2u2] = 2u2; // line 729
+    lower[0u2] = 0u2; // line 730
+	lower[1u2] = 1u2; // line 731
+	lower[2u2] = 0u2; // line 732
+
+    final_winner = 0u2; // line 734
+    query sampleAction(2u2, row_choice, column_choice); // line 735
+
+} // line 737
+
+sampleAction(u2 current_player, u2 &row_choice, u2 &column_choice) { // line 739
+    bool another_turn; // line 740
+    u2 other_player; // line 741
+    u2 otherPlayerRowChoice, otherPlayerColumnChoice;  // line 742
+    
+    // sample a choice from the priori // line 744
+    query action_priori(current_player, row_choice, column_choice); // line 745
+    
+    // is there a final_winner or is the grid filled? // line 747
+    another_turn = upper[0u2] == 0u2 || upper[1u2] == 0u2 || upper[2u2] == 0u2 || middle[0u2] == 0u2 || middle[1u2] == 0u2 || middle[2u2] == 0u2 || lower[0u2] == 0u2 || lower[1u2] == 0u2 || lower[2u2] == 0u2; // line 748
+    winning_condition(); // line 749
+
+    // if nobody has won and there is another turn to play... // line 751
+    if (final_winner == 0u2 && another_turn) {     // line 752
+        // passing the turn // line 753
+        if (current_player == 1u2) { // line 754
+            other_player = 2u2; // line 755
+        } else { // line 756
+            other_player = 1u2; // line 757
+        } // line 758
+        query sampleAction(other_player, otherPlayerRowChoice, otherPlayerColumnChoice); // line 759
+
+    } else {} // line 761
+
+    // observing according to the utility of the outcome // line 763
+    expected_utility(current_player); // line 764
+
+    // returning row_choice and column_choice - the choice of the player // line 766
+} // line 767
+
+
+action_priori(u2 current_player, u2 &row_choice, u2 &column_choice) { // line 770
+    u2 sampled_row_choice, sampled_column_choice; // line 771
+
+    sampled_row_choice = 0u2 {1u2 : 3u2} 1u2 {1u2: 3u2} 2u2; // line 773
+    sampled_column_choice = 0u2 {1u2 : 3u2} 1u2 {1u2: 3u2} 2u2; // line 774
+
+    // observe that the choice is feasible, and update the grid // line 776
+    if (sampled_row_choice == 0u2) { // line 777
+        observe upper[sampled_column_choice] == 0u2; // line 778
+        upper[sampled_column_choice] = current_player; // line 779
+    } else { // line 780
+        if (sampled_row_choice == 1u2) { // line 781
+            observe middle[sampled_column_choice] == 0u2; // line 782
+            middle[sampled_column_choice] = current_player; // line 783
+        } else { // line 784
+            observe lower[sampled_column_choice] == 0u2; // line 785
+            lower[sampled_column_choice] = current_player; // line 786
+        } // line 787
+    } // line 788
+    row_choice = sampled_row_choice; // line 789
+    column_choice = sampled_column_choice; // line 790
+} // line 791
+
+expected_utility(u2 current_player) { // line 793
+    bool coin_flip; // line 794
+    u4 utility; // line 795
+
+    if (final_winner == current_player) { // line 797
+        utility = 10u4; // line 798
+    } else { // line 799
+        if (final_winner == 0u2) { // line 800
+        utility = 5u4; // line 801
+        } else { // line 802
+            utility = 1u4; // line 803
+        } // line 804
+    } // line 805
+
+    // outcome should range from 0 to 10 // line 807
+    coin_flip = 1u1 {utility : 10u4} 0u1; // line 808
+    observe coin_flip; // line 809
+} // line 810
+
+winning_condition() { // line 812
+    if (upper[0u2] == upper[1u2] && upper[1u2] == upper[2u2]) { // line 813
+        final_winner = upper[0u2]; // line 814
+    } else { // line 815
+        if (middle[0u2] == middle[1u2] && middle[1u2] == middle[2u2]) { // line 816
+            final_winner = middle[0u2]; // line 817
+        } else { // line 818
+            if (lower[0u2] == lower[1u2] && lower[1u2] == lower[2u2]) { // line 819
+                final_winner = lower[0u2]; // line 820
+            } else { // line 821
+                if (upper[0u2] == middle[0u2] && middle[0u2] == lower[0u2]) { // line 822
+                    final_winner = upper[0u2]; // line 823
+                } else { // line 824
+                    if (upper[1u2] == middle[1u2] && middle[1u2] == lower[1u2]) { // line 825
+                        final_winner = upper[1u2]; // line 826
+                    } else { // line 827
+                        if (upper[2u2] == middle[2u2] && middle[2u2] == lower[2u2]) { // line 828
+                            final_winner = upper[2u2]; // line 829
+                        } else { // line 830
+                            if (upper[0u2] == middle[1u2] && middle[1u2] == lower[2u2]) { // line 831
+                                final_winner = upper[0u2]; // line 832
+                            } else { // line 833
+                                if (upper[2u2] == middle[1u2] && middle[1u2] == lower[0u2]) { // line 834
+                                    final_winner = upper[2u2]; // line 835
+                                } else { // line 836
+                                    final_winner = 0u2; // line 837
+                                } // line 838
+                            } // line 839
+                        } // line 840
+                    } // line 841
+                } // line 842
+            } // line 843
+        } // line 844
+    } // line 845
+} // line 846
+
+/*   // line 852
+    0 = non assigned // line 853
+    1 = circle (player 1) // line 854
+    2 = cross (player 2) // line 855
+    Initial Condition:  // line 856
+    |   | O |   | // line 857
+    | O | X | X | // line 858
+    |   | O |   | // line 859
+Reference: A. Stuhlmueller, N.D. Goodman, Reasoning about Reasoning by Nested Conditioning: Modeling Theory of Mind with Probabilistic Programs, Cognitive Systems Research 2014. // line 860
+*/  // line 861
+
+main (){ // line 863
+    u2 row_choice, column_choice; // line 864
+    upper[0u2] = 0u2; // line 865
+	upper[1u2] = 1u2; // line 866
+	upper[2u2] = 0u2; // line 867
+    middle[0u2] = 1u2; // line 868
+	middle[1u2] = 2u2; // line 869
+	middle[2u2] = 2u2; // line 870
+    lower[0u2] = 0u2; // line 871
+	lower[1u2] = 1u2; // line 872
+	lower[2u2] = 0u2; // line 873
+
+    final_winner = 0u2; // line 875
+    query sampleAction(2u2, row_choice, column_choice); // line 876
+
+} // line 878
+
+sampleAction(u2 current_player, u2 &row_choice, u2 &column_choice) { // line 880
+    bool another_turn; // line 881
+    u2 other_player; // line 882
+    u2 otherPlayerRowChoice, otherPlayerColumnChoice;  // line 883
+    
+    // sample a choice from the priori // line 885
+    query action_priori(current_player, row_choice, column_choice); // line 886
+    
+    // is there a final_winner or is the grid filled? // line 888
+    another_turn = upper[0u2] == 0u2 || upper[1u2] == 0u2 || upper[2u2] == 0u2 || middle[0u2] == 0u2 || middle[1u2] == 0u2 || middle[2u2] == 0u2 || lower[0u2] == 0u2 || lower[1u2] == 0u2 || lower[2u2] == 0u2; // line 889
+    winning_condition(); // line 890
+
+    // if nobody has won and there is another turn to play... // line 892
+    if (final_winner == 0u2 && another_turn) {     // line 893
+        // passing the turn // line 894
+        if (current_player == 1u2) { // line 895
+            other_player = 2u2; // line 896
+        } else { // line 897
+            other_player = 1u2; // line 898
+        } // line 899
+        query sampleAction(other_player, otherPlayerRowChoice, otherPlayerColumnChoice); // line 900
+
+    } else {} // line 902
+
+    // observing according to the utility of the outcome // line 904
+    expected_utility(current_player); // line 905
+
+    // returning row_choice and column_choice - the choice of the player // line 907
+} // line 908
+
+
+action_priori(u2 current_player, u2 &row_choice, u2 &column_choice) { // line 911
+    u2 sampled_row_choice, sampled_column_choice; // line 912
+
+    sampled_row_choice = 0u2 {1u2 : 3u2} 1u2 {1u2: 3u2} 2u2; // line 914
+    sampled_column_choice = 0u2 {1u2 : 3u2} 1u2 {1u2: 3u2} 2u2; // line 915
+
+    // observe that the choice is feasible, and update the grid // line 917
+    if (sampled_row_choice == 0u2) { // line 918
+        observe upper[sampled_column_choice] == 0u2; // line 919
+        upper[sampled_column_choice] = current_player; // line 920
+    } else { // line 921
+        if (sampled_row_choice == 1u2) { // line 922
+            observe middle[sampled_column_choice] == 0u2; // line 923
+            middle[sampled_column_choice] = current_player; // line 924
+        } else { // line 925
+            observe lower[sampled_column_choice] == 0u2; // line 926
+            lower[sampled_column_choice] = current_player; // line 927
+        } // line 928
+    } // line 929
+    row_choice = sampled_row_choice; // line 930
+    column_choice = sampled_column_choice; // line 931
+} // line 932
+
+expected_utility(u2 current_player) { // line 934
+    bool coin_flip; // line 935
+    u4 utility; // line 936
+
+    if (final_winner == current_player) { // line 938
+        utility = 10u4; // line 939
+    } else { // line 940
+        if (final_winner == 0u2) { // line 941
+        utility = 5u4; // line 942
+        } else { // line 943
+            utility = 1u4; // line 944
+        } // line 945
+    } // line 946
+
+    // outcome should range from 0 to 10 // line 948
+    coin_flip = 1u1 {utility : 10u4} 0u1; // line 949
+    observe coin_flip; // line 950
+} // line 951
+
+winning_condition() { // line 953
+    if (upper[0u2] == upper[1u2] && upper[1u2] == upper[2u2]) { // line 954
+        final_winner = upper[0u2]; // line 955
+    } else { // line 956
+        if (middle[0u2] == middle[1u2] && middle[1u2] == middle[2u2]) { // line 957
+            final_winner = middle[0u2]; // line 958
+        } else { // line 959
+            if (lower[0u2] == lower[1u2] && lower[1u2] == lower[2u2]) { // line 960
+                final_winner = lower[0u2]; // line 961
+            } else { // line 962
+                if (upper[0u2] == middle[0u2] && middle[0u2] == lower[0u2]) { // line 963
+                    final_winner = upper[0u2]; // line 964
+                } else { // line 965
+                    if (upper[1u2] == middle[1u2] && middle[1u2] == lower[1u2]) { // line 966
+                        final_winner = upper[1u2]; // line 967
+                    } else { // line 968
+                        if (upper[2u2] == middle[2u2] && middle[2u2] == lower[2u2]) { // line 969
+                            final_winner = upper[2u2]; // line 970
+                        } else { // line 971
+                            if (upper[0u2] == middle[1u2] && middle[1u2] == lower[2u2]) { // line 972
+                                final_winner = upper[0u2]; // line 973
+                            } else { // line 974
+                                if (upper[2u2] == middle[1u2] && middle[1u2] == lower[0u2]) { // line 975
+                                    final_winner = upper[2u2]; // line 976
+                                } else { // line 977
+                                    final_winner = 0u2; // line 978
+                                } // line 979
+                            } // line 980
+                        } // line 981
+                    } // line 982
+                } // line 983
+            } // line 984
+        } // line 985
+    } // line 986
+} // line 987
+
+/*   // line 993
+    0 = non assigned // line 994
+    1 = circle (player 1) // line 995
+    2 = cross (player 2) // line 996
+    Initial Condition:  // line 997
+    |   | O |   | // line 998
+    | O | X | X | // line 999
+    |   | O |   | // line 1000
+Reference: A. Stuhlmueller, N.D. Goodman, Reasoning about Reasoning by Nested Conditioning: Modeling Theory of Mind with Probabilistic Programs, Cognitive Systems Research 2014. // line 1001
+*/  // line 1002
+
+main (){ // line 1004
+    u2 row_choice, column_choice; // line 1005
+    upper[0u2] = 0u2; // line 1006
+	upper[1u2] = 1u2; // line 1007
+	upper[2u2] = 0u2; // line 1008
+    middle[0u2] = 1u2; // line 1009
+	middle[1u2] = 2u2; // line 1010
+	middle[2u2] = 2u2; // line 1011
+    lower[0u2] = 0u2; // line 1012
+	lower[1u2] = 1u2; // line 1013
+	lower[2u2] = 0u2; // line 1014
+
+    final_winner = 0u2; // line 1016
+    query sampleAction(2u2, row_choice, column_choice); // line 1017
+
+} // line 1019
+
+sampleAction(u2 current_player, u2 &row_choice, u2 &column_choice) { // line 1021
+    bool another_turn; // line 1022
+    u2 other_player; // line 1023
+    u2 otherPlayerRowChoice, otherPlayerColumnChoice;  // line 1024
+    
+    // sample a choice from the priori // line 1026
+    query action_priori(current_player, row_choice, column_choice); // line 1027
+    
+    // is there a final_winner or is the grid filled? // line 1029
+    another_turn = upper[0u2] == 0u2 || upper[1u2] == 0u2 || upper[2u2] == 0u2 || middle[0u2] == 0u2 || middle[1u2] == 0u2 || middle[2u2] == 0u2 || lower[0u2] == 0u2 || lower[1u2] == 0u2 || lower[2u2] == 0u2; // line 1030
+    winning_condition(); // line 1031
+
+    // if nobody has won and there is another turn to play... // line 1033
+    if (final_winner == 0u2 && another_turn) {     // line 1034
+        // passing the turn // line 1035
+        if (current_player == 1u2) { // line 1036
+            other_player = 2u2; // line 1037
+        } else { // line 1038
+            other_player = 1u2; // line 1039
+        } // line 1040
+        query sampleAction(other_player, otherPlayerRowChoice, otherPlayerColumnChoice); // line 1041
+
+    } else {} // line 1043
+
+    // observing according to the utility of the outcome // line 1045
+    expected_utility(current_player); // line 1046
+
+    // returning row_choice and column_choice - the choice of the player // line 1048
+} // line 1049
+
+
+action_priori(u2 current_player, u2 &row_choice, u2 &column_choice) { // line 1052
+    u2 sampled_row_choice, sampled_column_choice; // line 1053
+
+    sampled_row_choice = 0u2 {1u2 : 3u2} 1u2 {1u2: 3u2} 2u2; // line 1055
+    sampled_column_choice = 0u2 {1u2 : 3u2} 1u2 {1u2: 3u2} 2u2; // line 1056
+
+    // observe that the choice is feasible, and update the grid // line 1058
+    if (sampled_row_choice == 0u2) { // line 1059
+        observe upper[sampled_column_choice] == 0u2; // line 1060
+        upper[sampled_column_choice] = current_player; // line 1061
+    } else { // line 1062
+        if (sampled_row_choice == 1u2) { // line 1063
+            observe middle[sampled_column_choice] == 0u2; // line 1064
+            middle[sampled_column_choice] = current_player; // line 1065
+        } else { // line 1066
+            observe lower[sampled_column_choice] == 0u2; // line 1067
+            lower[sampled_column_choice] = current_player; // line 1068
+        } // line 1069
+    } // line 1070
+    row_choice = sampled_row_choice; // line 1071
+    column_choice = sampled_column_choice; // line 1072
+} // line 1073
+
+expected_utility(u2 current_player) { // line 1075
+    bool coin_flip; // line 1076
+    u4 utility; // line 1077
+
+    if (final_winner == current_player) { // line 1079
+        utility = 10u4; // line 1080
+    } else { // line 1081
+        if (final_winner == 0u2) { // line 1082
+        utility = 5u4; // line 1083
+        } else { // line 1084
+            utility = 1u4; // line 1085
+        } // line 1086
+    } // line 1087
+
+    // outcome should range from 0 to 10 // line 1089
+    coin_flip = 1u1 {utility : 10u4} 0u1; // line 1090
+    observe coin_flip; // line 1091
+} // line 1092
+
+winning_condition() { // line 1094
+    if (upper[0u2] == upper[1u2] && upper[1u2] == upper[2u2]) { // line 1095
+        final_winner = upper[0u2]; // line 1096
+    } else { // line 1097
+        if (middle[0u2] == middle[1u2] && middle[1u2] == middle[2u2]) { // line 1098
+            final_winner = middle[0u2]; // line 1099
+        } else { // line 1100
+            if (lower[0u2] == lower[1u2] && lower[1u2] == lower[2u2]) { // line 1101
+                final_winner = lower[0u2]; // line 1102
+            } else { // line 1103
+                if (upper[0u2] == middle[0u2] && middle[0u2] == lower[0u2]) { // line 1104
+                    final_winner = upper[0u2]; // line 1105
+                } else { // line 1106
+                    if (upper[1u2] == middle[1u2] && middle[1u2] == lower[1u2]) { // line 1107
+                        final_winner = upper[1u2]; // line 1108
+                    } else { // line 1109
+                        if (upper[2u2] == middle[2u2] && middle[2u2] == lower[2u2]) { // line 1110
+                            final_winner = upper[2u2]; // line 1111
+                        } else { // line 1112
+                            if (upper[0u2] == middle[1u2] && middle[1u2] == lower[2u2]) { // line 1113
+                                final_winner = upper[0u2]; // line 1114
+                            } else { // line 1115
+                                if (upper[2u2] == middle[1u2] && middle[1u2] == lower[0u2]) { // line 1116
+                                    final_winner = upper[2u2]; // line 1117
+                                } else { // line 1118
+                                    final_winner = 0u2; // line 1119
+                                } // line 1120
+                            } // line 1121
+                        } // line 1122
+                    } // line 1123
+                } // line 1124
+            } // line 1125
+        } // line 1126
+    } // line 1127
+} // line 1128

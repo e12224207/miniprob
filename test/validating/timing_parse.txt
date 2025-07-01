@@ -1,0 +1,10 @@
+bounded-schelling.pomc,37.67 ms
+empty.pomc,0.68 ms
+everyLangRule.pomc,11.30 ms
+mutualRec.pomc,1.90 ms
+piranhaPuzzle.pomc,1.18 ms
+Q1.pomc,14.11 ms
+shelling.pomc,2.82 ms
+tictactoe.pomc,11.10 ms
+large_tictactoe_test_file.pomc,937.34 ms
+large_tictactoe_test_1000.pomc,53.45 ms

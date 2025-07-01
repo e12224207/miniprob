@@ -33,15 +33,15 @@ Lval:
     ref=[DeclOrParam:ID] ('['index=Expression']')?;
 
 IfThenElse:
-    'if' '(' condition=Expression ')' '{' thenBlock=Block? '}' 'else' '{' elseBlock=Block? '}';
+    'if' '(' condition=Expression ')' '{' thenBlock=Block? '}' 'else' '{' elseBlock=Block? '}'; //empty possible! and else needed!
 While:
-    'while' '(' condition=Expression ')' '{' whileBlock=Block? '}';
+    'while' '(' condition=Expression ')' '{' whileBlock=Block? '}';//empty while!
 TryCatch:
-    'try' '{' tryBlock=Block? '}' 'catch' '{' catchBlock=Block? '}';
+    'try' '{' tryBlock=Block? '}' 'catch' '{' catchBlock=Block? '}';// empty catch and try!
 Assignment:
-    leftValue=Lval '=' (distribution=Distribution | expression=Expression);
+    leftValue=Lval '=' (distribution=Distribution | expression=Expression); //probability assign now expression
 Observation:
-    'observe' condition=Expression;
+    'observe' condition=Expression; // no ()! implicit with expr
 Query:
     'query' function=FuncCall;
 

@@ -10,25 +10,19 @@
 <id_list> ::= ',' identifier <id_list>
            | ε
 
-<func> ::= identifier '(' <param_list_opt> ')' '{' <decl_list_in_func> block '}'
+<func> ::= identifier '(' <param_list> ')' '{' <decl_list> <block> '}'
 
-<param_list_opt> ::= <param_list>
-                   | ε
-
-<decl_list_in_func> ::= <decl> ';' <decl_list_in_func>
-                      | ε
-
-<func_call> ::= identifier '(' <arg_list_opt> ')'
-
-<arg_list_opt> ::= <arg_list>
-                 | ε
+<func_call> ::= identifier '(' <arg_list> ')'
 
 <arg_list> ::= <arg> <arg_list_tail>
+                | ε
 <arg_list_tail> ::= ',' <arg> <arg_list_tail>
                  | ε
 
-<block> ::= stmt <stmt_list>
-<stmt_list> ::= stmt <stmt_list>
+<block> ::= <stmt> <stmt_list>
+<block_opt> ::= <block> | ε
+
+<stmt_list> ::= <stmt> <stmt_list>
               | ε
 
 <stmt> ::= <assignment> ';'
@@ -41,19 +35,17 @@
          | <try_catch>
 
 <assignment> ::= <lval> '=' <assign_rhs>
-<assign_rhs> ::= <expr>
-               | <distribution>
-               | <prob_assign>
+<assign_rhs> ::= <expr> | <distribution>
 
 <query> ::= 'query' <func_call>
 
-<observation> ::= 'observe' '(' <expr> ')'
+<observation> ::= 'observe' <expr>
 
-<if_then_else> ::= 'if' '(' <expr> ')' '{' block '}' 'else' '{' block '}'
+<if_then_else> ::= 'if' '(' <expr> ')' '{' <block_opt> '}' 'else' '{' <block_opt> '}'
 
-<while> ::= 'while' '(' <expr> ')' '{' block '}'
+<while> ::= 'while' '(' <expr> ')' '{' <block_opt> '}'
 
-<try_catch> ::= 'try' '{' <block> '}' 'catch' '{' <block> '}'
+<try_catch> ::= 'try' '{' <block_opt> '}' 'catch' '{' <block_opt> '}'
 
 <lval> ::= identifier
          | identifier '[' <expr> ']'
@@ -66,19 +58,19 @@
             | ε
 
 <param_list> ::= <param> <param_list_tail>
+                | ε
 <param_list_tail> ::= ',' <param> <param_list_tail>
                     | ε
 
 <arg> ::= <expr>
-        | <amp_opt> <lval>
 
-<prob_assign> ::= <prob_choice> <prob_choice_list> <expr>
-<prob_choice_list> ::= <prob_choice> <prob_choice_list>
-                     | ε
+<expr> ::= <logical_or> <prob_assign_opt>
 
-<prob_choice> ::= <expr> '{' <expr> ':' <expr> '}'
+<prob_assign_opt> ::= <prob_assign>
+                    | ε
 
-<expr> ::= <logical_or>
+<prob_assign> ::= <prob_choice> <expr>
+<prob_choice> ::= '{' <expr> ':' <expr> '}'
 
 <logical_or> ::= <logical_and> <logical_or_tail>
 <logical_or_tail> ::= '||' <logical_and> <logical_or_tail>
@@ -97,46 +89,37 @@
 <term_tail> ::= ('+' | '-') <factor> <term_tail>
              | ε
 
-<factor> ::= <unary> <factor_tail>
-<factor_tail> ::= ('*' | '/' | '%') <unary> <factor_tail>
+<factor> ::= <division> <factor_tail>
+<factor_tail> ::= '*' <division> <factor_tail>
                | ε
+
+<division> ::= <unary> <division_tail>
+<division_tail> ::= ('/' | '%') <unary> <division_tail>
+                  | ε
 
 <unary> ::= <unary_op> <unary>
          | <primary>
 <unary_op> ::= '!' | '-'
 
 <primary> ::= <bool>
-            | <int>
+            | <int_literal>
             | <lval>
             | '(' <expr> ')'
 
-<binary_op> ::= '+' | '-' | '*' | '/' | '==' | '!=' | '<' | '<=' | '>' | '>=' | '&&' | '||'
-
-/* Lexical nonterminals for illustrative purposes */
-/* 
-   The following definitions show one way to convert the regular-expression style
-   definitions into a recursive BNF. In practice, these are usually defined at the lexer level.
-*/
-
 <identifier> ::= <letter> <ident_tail>
-<ident_tail> ::= <letter_or_digit> <ident_tail>
+<ident_tail> ::= (<letter_or_digit> | \.\:\~)  <ident_tail>
                | ε
-<letter> ::= 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm' | 'n' 
-           | 'o' | 'p' | 'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z'
-           | 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' | 'L' | 'M' | 'N'
-           | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z'
-           | '_'
+<letter> ::= 'a' | 'b' | ... | 'Z' | '_'
 <letter_or_digit> ::= <letter> | <digit>
-<digit> ::= '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
+<digit> ::= '0' | ... | '9'
 
-<type> ::= 'bool'
-         | "u'int" 
-         | "s'int"
-         | "u'int" '[' <int> ']'
-         | "s'int" '[' <int> ']'
+<type> ::= 'bool' 
+	| <int_spec> 
+	| <int_spec> '[' <int_literal> ']'
 
-<int> ::= <digit> <int_tail>
-<int_tail> ::= <digit> <int_tail>
-            | ε
+<digit_seq> ::= <digit> <digit_seq> | <digit>
+<int_spec> ::= 'u' <digit_seq>
+             | 's' <digit_seq>
+<int_literal> ::= <digit_seq> <int_spec>
 
 <bool> ::= "true" | "false"

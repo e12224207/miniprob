@@ -91,7 +91,7 @@ export class MiniProbValidator {
   /**
    * Ensure that any array‐style L-value index is an integer.
    *
-   * - Infers the type of `node.index`.
+   * - Infers the type of the index.
    * - If it’s an error type, reports that error.
    * - Otherwise, confirms it’s an integer, else reports incompatibility.
    *
@@ -460,7 +460,7 @@ export class MiniProbValidator {
    * Ensure integer literals contain no internal spaces.
    *
    * - Retrieves the CST token text.
-   * - Uses regex to detect any spaces in the numeric literal.
+   * - Uses regex to detect any spaces in the numeric literal.shadow
    *
    * @param node      The IntegerLiteral AST node.
    * @param accept    Callback to emit validation messages.
@@ -478,7 +478,7 @@ export class MiniProbValidator {
    *
    * - Gathers all top‐level and local declarations in the same scope.
    * - Checks for duplicate names within this node’s own list.
-   * - Ensures none of the names shadow existing declarations.
+   * - Ensures none of the names share existing declarations.
    *
    * @param node      The Decl AST node.
    * @param accept    Callback to emit validation messages.
