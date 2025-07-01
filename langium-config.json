@@ -1,19 +1,17 @@
 {
-    "projectName": "MiniProb",
-    "languages": [{
-        "id": "mini-prob",
-        "grammar": "src/language/mini-prob.langium",
-        "fileExtensions": [".pomc"],
-        "monarch": {
-            "out": "src/syntaxes/mini-prob.monarch.ts",
-            "generate": false
-        },
-        "chevrotainParserConfig": {
-            "maxLookahead": 2
-        },
-        "textMate": {
-            "out": "syntaxes/mini-prob.tmLanguage.json"
-        }
-    }],
-    "out": "src/language/generated"
+  "projectName": "MiniProb",
+  "languages": [
+    {
+      "id": "mini-prob",
+      "grammar": "src/language/mini-prob.langium",
+      "fileExtensions": [".pomc"],      
+      "chevrotainParserConfig": {
+        "maxLookahead": 2
+      },
+      "textMate": {
+        "out": "syntaxes/mini-prob.tmLanguage.json"
+      }
+    }
+  ],
+  "out": "src/language/generated"
 }

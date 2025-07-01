@@ -1,5 +1,12 @@
 import { type Module, inject } from 'langium';
-import { createDefaultModule, createDefaultSharedModule, type DefaultSharedModuleContext, type LangiumServices, type LangiumSharedServices, type PartialLangiumServices } from 'langium/lsp';
+import {
+  createDefaultModule,
+  createDefaultSharedModule,
+  type DefaultSharedModuleContext,
+  type LangiumServices,
+  type LangiumSharedServices,
+  type PartialLangiumServices,
+} from 'langium/lsp';
 import { MiniProbGeneratedModule, MiniProbGeneratedSharedModule } from './generated/module.js';
 import { MiniProbValidator, registerValidationChecks } from './service/mini-prob-validator.js';
 import { MiniProbScopeProvider } from './service/mini-prob-scope-provider.js';
@@ -11,39 +18,42 @@ import { SharedMiniProbCache } from './service/mini-prob-caching.js';
  * Declaration of custom services - add your own service classes here.
  */
 export type MiniProbAddedServices = {
-    validation: {
-        MiniProbValidator: MiniProbValidator
-    },
-    caching: {
-        MiniProbCache: SharedMiniProbCache
-    }
-}
+  validation: {
+    MiniProbValidator: MiniProbValidator;
+  };
+  caching: {
+    MiniProbCache: SharedMiniProbCache;
+  };
+};
 
 /**
  * Union of Langium default services and your custom services - use this as constructor parameter
  * of custom service classes.
  */
-export type MiniProbServices = LangiumServices & MiniProbAddedServices
+export type MiniProbServices = LangiumServices & MiniProbAddedServices;
 
 /**
  * Dependency injection module that overrides Langium default services and contributes the
  * declared custom services. The Langium defaults can be partially specified to override only
  * selected services, while the custom services must be fully specified.
  */
-export const MiniProbModule: Module<MiniProbServices, PartialLangiumServices & MiniProbAddedServices> = {
-    validation: {
-        MiniProbValidator: (services) => new MiniProbValidator(services)        
-    },
-    references: {
-        ScopeProvider: (services) => new MiniProbScopeProvider(services),
-        ScopeComputation: (services) => new MiniProbScopeComputation(services),        
-    },
-    caching: {
-        MiniProbCache: (services) => new SharedMiniProbCache(services)
-    },
-    // lsp: {
-    //     CompletionProvider: (services) => new MiniProbCompletionProvider(services)
-    // }
+export const MiniProbModule: Module<
+  MiniProbServices,
+  PartialLangiumServices & MiniProbAddedServices
+> = {
+  validation: {
+    MiniProbValidator: (services) => new MiniProbValidator(services),
+  },
+  references: {
+    ScopeProvider: (services) => new MiniProbScopeProvider(services),
+    ScopeComputation: (services) => new MiniProbScopeComputation(services),
+  },
+  caching: {
+    MiniProbCache: (services) => new SharedMiniProbCache(services),
+  },
+  // lsp: {
+  //     CompletionProvider: (services) => new MiniProbCompletionProvider(services)
+  // }
 };
 
 /**
@@ -62,24 +72,17 @@ export const MiniProbModule: Module<MiniProbServices, PartialLangiumServices & M
  * @returns An object wrapping the shared services and the language-specific services
  */
 export function createMiniProbServices(context: DefaultSharedModuleContext): {
-    shared: LangiumSharedServices,
-    MiniProb: MiniProbServices
+  shared: LangiumSharedServices;
+  MiniProb: MiniProbServices;
 } {
-    const shared = inject(
-        createDefaultSharedModule(context),
-        MiniProbGeneratedSharedModule
-    );
-    const MiniProb = inject(
-        createDefaultModule({ shared }),
-        MiniProbGeneratedModule,
-        MiniProbModule
-    );
-    shared.ServiceRegistry.register(MiniProb);
-    registerValidationChecks(MiniProb);
-    if (!context.connection) {
-        // We don't run inside a language server
-        // Therefore, initialize the configuration provider instantly
-        shared.workspace.ConfigurationProvider.initialized({});
-    }
-    return { shared, MiniProb };
+  const shared = inject(createDefaultSharedModule(context), MiniProbGeneratedSharedModule);
+  const MiniProb = inject(createDefaultModule({ shared }), MiniProbGeneratedModule, MiniProbModule);
+  shared.ServiceRegistry.register(MiniProb);
+  registerValidationChecks(MiniProb);
+  if (!context.connection) {
+    // We don't run inside a language server
+    // Therefore, initialize the configuration provider instantly
+    shared.workspace.ConfigurationProvider.initialized({});
+  }
+  return { shared, MiniProb };
 }

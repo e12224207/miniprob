@@ -1,4 +1,35 @@
-.vscode/**
 .vscode-test/**
 .gitignore
 langium-quickstart.md
+# ignore editor and Git metadata
+.vscode/**
+.git/**
+
+# ignore IDE tool configs
+.eslintrc.js
+eslint.config.js
+.eslintignore
+.prettierrc*
+tsconfig.json
+tsconfig.*.json
+vitest.config.ts
+esbuild.mjs
+
+# ignore source code and tests
+src/**
+test/**
+**/*.test.ts
+**/*.spec.ts
+
+# ignore documentation, CI configs, lockfiles, logs
+docs/**
+README.*         ← (you might keep README.md if you want it bundled)
+CHANGELOG.md
+LICENSE         ← (you’ll usually keep this too)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+npm-debug.log
+yarn-error.log
+
+# everything else falls through—out/, syntaxes/, language-configuration.json, package.json, etc., will be included

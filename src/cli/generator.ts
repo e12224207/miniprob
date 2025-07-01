@@ -4,21 +4,25 @@ import type { Program } from '../language/generated/ast.js';
 // import * as path from 'node:path';
 // import { extractDestinationAndName } from './cli-util.js';
 
-export function generateJavaScript(model: Program, filePath: string, destination: string | undefined): string {
-    // Scaffolding code
-    // const data = extractDestinationAndName(filePath, destination);
-    // const generatedFilePath = `${path.join(data.destination, data.name)}.js`;
+export function generateJavaScript(
+  model: Program,
+  filePath: string,
+  destination: string | undefined
+): string {
+  // Scaffolding code
+  // const data = extractDestinationAndName(filePath, destination);
+  // const generatedFilePath = `${path.join(data.destination, data.name)}.js`;
 
-    // const fileNode = expandToNode`
-    //     "use strict";
+  // const fileNode = expandToNode`
+  //     "use strict";
 
-    //     ${joinToNode(model.greetings, greeting => `console.log('Hello, ${greeting.person.ref?.name}!');`, { appendNewLineIfNotEmpty: true })}
-    // `.appendNewLineIfNotEmpty();
+  //     ${joinToNode(model.greetings, greeting => `console.log('Hello, ${greeting.person.ref?.name}!');`, { appendNewLineIfNotEmpty: true })}
+  // `.appendNewLineIfNotEmpty();
 
-    // if (!fs.existsSync(data.destination)) {
-    //     fs.mkdirSync(data.destination, { recursive: true });
-    // }
-    // fs.writeFileSync(generatedFilePath, toString(fileNode));
-    // return generatedFilePath;
-    return ''; //stubbed for the moment
+  // if (!fs.existsSync(data.destination)) {
+  //     fs.mkdirSync(data.destination, { recursive: true });
+  // }
+  // fs.writeFileSync(generatedFilePath, toString(fileNode));
+  // return generatedFilePath;
+  return ''; //stubbed for the moment
 }

@@ -1,9 +1,8 @@
 import {
   AstNode,
-  AstNodeDescription,
   AstUtils,
   type ValidationAcceptor,
-  type ValidationChecks
+  type ValidationChecks,
 } from 'langium';
 import {
   isLval,
@@ -12,34 +11,26 @@ import {
   Lval,
   Decl,
   type MiniProbAstType,
-  type Param,
   Func,
   FuncCall,
-  ProbabilisticAssignment,
   ProbChoice,
-  IntLiteral,
-  isDecl,
-  isParam,
   Assignment,
   Distribution,
   BinaryExpression,
   LogicalNegation,
   IntegerLiteral,
-  Program,
   Query,
-  Observation
+  Observation,
 } from '../generated/ast.js';
 import type { MiniProbServices } from '../mini-prob-module.js';
 import { SharedMiniProbCache } from './mini-prob-caching.js';
 import {
-  DistributionTypeDescription,
-  ErrorType,
   IntegerTypeDescription,
   isBooleanType,
   isErrorType,
   isIntegerType,
   TypeDescription,
-  typeToString
+  typeToString,
 } from '../type-system/description.js';
 import { inferType } from '../type-system/infer.js';
 import { isCompatible } from '../type-system/compatible.js';
@@ -75,7 +66,6 @@ export function registerValidationChecks(services: MiniProbServices) {
  * Uses a shared cache to avoid recomputing type descriptions.
  */
 export class MiniProbValidator {
-
   /** Shared cache for storing type descriptions across validations. */
   private readonly descriptionCache: SharedMiniProbCache;
 
@@ -105,15 +95,15 @@ export class MiniProbValidator {
       if (isErrorType(indexType)) {
         accept('error', indexType.message, {
           node: indexType.source ?? node,
-          property: 'index'
+          property: 'index',
         });
         return;
       }
       if (!isIntegerType(indexType)) {
-        accept('error',
-          `Index type '${typeToString(indexType)}' not compatible with integer`,
-          { node, property: 'index' }
-        );
+        accept('error', `Index type '${typeToString(indexType)}' not compatible with integer`, {
+          node,
+          property: 'index',
+        });
       }
     }
   }
@@ -142,18 +132,19 @@ export class MiniProbValidator {
     if (isErrorType(leftType)) {
       skipAssignErr = true;
       accept('error', leftType.message, {
-        node: leftType.source ?? node
+        node: leftType.source ?? node,
       });
     }
     if (isErrorType(rightType)) {
       skipAssignErr = true;
       accept('error', rightType.message, {
-        node: rightType.source ?? node
+        node: rightType.source ?? node,
       });
     }
 
     if (!skipAssignErr && !isCompatible(leftType, rightType)) {
-      accept('error',
+      accept(
+        'error',
         `Type ${typeToString(rightType)} is not assignable to ${typeToString(leftType)}.`,
         { node, property: 'expression' }
       );
@@ -176,7 +167,8 @@ export class MiniProbValidator {
       var noMatchParams = refNode.params?.parameters.length !== node.argumentList?.arguments.length;
       if (noMatchParams) {
         accept('error', 'Number of parameters does not match.', {
-          node, property: 'argumentList'
+          node,
+          property: 'argumentList',
         });
         return;
       }
@@ -186,30 +178,30 @@ export class MiniProbValidator {
       if (node.argumentList) {
         const functionCallErrors = [];
         for (let i = 0; i < node.argumentList.arguments.length; i++) {
-          let skipCompatibility = false;          
+          let skipCompatibility = false;
 
           const argType = inferType(node.argumentList.arguments[i].expression, map);
           const paramType = inferType(refNode.params!.parameters[i], map);
           if (isErrorType(argType)) {
             functionCallErrors.push({
               node: node.argumentList!.arguments[i],
-              message: `Conflicting argument: ${argType.message}`
+              message: `Conflicting argument: ${argType.message}`,
             });
             skipCompatibility = true;
           }
           if (isErrorType(paramType)) {
             functionCallErrors.push({
               node: refNode.params!.parameters[i],
-              message: `Conflicting parameter: ${paramType.message}`
+              message: `Conflicting parameter: ${paramType.message}`,
             });
             skipCompatibility = true;
           }
           if (!skipCompatibility && !isCompatible(paramType, argType)) {
             functionCallErrors.push({
               node: node.argumentList!.arguments[i],
-              message: `Argument type '${typeToString(argType)}' cannot be passed to '${typeToString(paramType)}'`
+              message: `Argument type '${typeToString(argType)}' cannot be passed to '${typeToString(paramType)}'`,
             });
-            skipCompatibility=true;
+            skipCompatibility = true;
           }
 
           //value-result parameter have to be matched with references
@@ -217,7 +209,7 @@ export class MiniProbValidator {
             if (!isLval(node.argumentList.arguments[i].expression)) {
               functionCallErrors.push({
                 node: node.argumentList.arguments[i],
-                message: 'Value-result parameter expect named variables.'
+                message: 'Value-result parameter expect named variables.',
               });
             }
 
@@ -225,7 +217,7 @@ export class MiniProbValidator {
             if (!skipCompatibility && !isCompatible(argType, paramType)) {
               functionCallErrors.push({
                 node: node.argumentList.arguments[i],
-                message: 'Value-result parameter and argument types must match.'
+                message: 'Value-result parameter and argument types must match.',
               });
             }
           }
@@ -248,20 +240,20 @@ export class MiniProbValidator {
    */
   checkFunctionDefinitions(node: Func, accept: ValidationAcceptor) {
     if (node.name === 'main' && node.params) {
-      accept('error', 'Function \'main\' cannot have any arguments.', {
-        node, property: 'params'
+      accept('error', "Function 'main' cannot have any arguments.", {
+        node,
+        property: 'params',
       });
     }
 
-    const functionNames = AstUtils
-      .getContainerOfType(node, isProgram)!
-      .functions
-      .filter(f => f !== node)
-      .map(f => f.name);
+    const functionNames = AstUtils.getContainerOfType(node, isProgram)!
+      .functions.filter((f) => f !== node)
+      .map((f) => f.name);
 
     if (functionNames.includes(node.name)) {
       accept('error', `Function with name ${node.name} already exists`, {
-        node, property: 'name'
+        node,
+        property: 'name',
       });
     }
   }
@@ -276,7 +268,7 @@ export class MiniProbValidator {
    * @param accept    Callback to emit validation messages.
    */
   checkQueryFunctionCall(node: Query, accept: ValidationAcceptor) {
-    var refFunction = node.function.ref.ref;    
+    var refFunction = node.function.ref.ref;
     if (refFunction) {
       const parameters = refFunction.params?.parameters;
       if (!parameters) {
@@ -285,12 +277,11 @@ export class MiniProbValidator {
         });
       } else {
         for (const param of parameters!) {
-          if (param.byRef)
-            return;
+          if (param.byRef) return;
         }
         accept('error', 'At least one parameter must be value-result(by reference).', {
           node,
-          property: 'function'
+          property: 'function',
         });
       }
     }
@@ -321,7 +312,8 @@ export class MiniProbValidator {
       skipCompatibility = true;
     }
     if (!skipCompatibility && !isLegalOperation(':', numerator, denominator)) {
-      accept('error',
+      accept(
+        'error',
         `This operation ':' is not possible with types '${typeToString(numerator)}' and '${typeToString(denominator)}'`,
         { node }
       );
@@ -334,7 +326,8 @@ export class MiniProbValidator {
       accept('error', 'Division by 0 not possible', { node });
       return;
     }
-    if (num.signed ||
+    if (
+      num.signed ||
       den.signed ||
       (num.literal && den.literal && num.literal.literal.value > den.literal.literal.value)
     ) {
@@ -354,7 +347,8 @@ export class MiniProbValidator {
    * @param accept    Callback to emit validation messages.
    */
   checkDistributions(node: Distribution, accept: ValidationAcceptor) {
-    if ((node.name === 'Bernoulli' && (!node.q || !node.p)) ||
+    if (
+      (node.name === 'Bernoulli' && (!node.q || !node.p)) ||
       (node.name === 'Uniform' && (!node.upper || !node.lower))
     ) {
       accept('error', 'Distributions expect two arguments', { node });
@@ -367,10 +361,16 @@ export class MiniProbValidator {
 
     switch (node.name) {
       case 'Bernoulli':
-        params = [{ property: 'p', expr: node.p }, { property: 'q', expr: node.q }];
+        params = [
+          { property: 'p', expr: node.p },
+          { property: 'q', expr: node.q },
+        ];
         break;
       case 'Uniform':
-        params = [{ property: 'lower', expr: node.lower }, { property: 'upper', expr: node.upper }];
+        params = [
+          { property: 'lower', expr: node.lower },
+          { property: 'upper', expr: node.upper },
+        ];
         break;
       default:
         return;
@@ -388,10 +388,10 @@ export class MiniProbValidator {
       for (const { property, expr } of params) {
         const ty = inferType(expr, map);
         if (!isIntegerType(ty)) {
-          accept('error',
-            `Argument type '${typeToString(ty)}' not compatible with 'integer'`,
-            { node, property }
-          );
+          accept('error', `Argument type '${typeToString(ty)}' not compatible with 'integer'`, {
+            node,
+            property,
+          });
         }
       }
     }
@@ -423,7 +423,8 @@ export class MiniProbValidator {
     }
 
     if (!skipCompatibility && !isLegalOperation(node.operator, leftType, rightType)) {
-      accept('error',
+      accept(
+        'error',
         `The operation '${node.operator}' cannot be performed on types '${typeToString(leftType)}' and '${typeToString(rightType)}'`,
         { node }
       );
@@ -449,7 +450,8 @@ export class MiniProbValidator {
       return;
     }
     if (!isLegalOperation(node.operator, operandType)) {
-      accept('error',
+      accept(
+        'error',
         `The operation '${node.operator}' is not possible on type '${typeToString(operandType)}'`,
         { node, property: 'operand' }
       );
@@ -484,42 +486,51 @@ export class MiniProbValidator {
    * @param accept    Callback to emit validation messages.
    */
   checkDeclarationIds(node: Decl, accept: ValidationAcceptor) {
-    const topLevelNames = AstUtils.getContainerOfType(node, isProgram)
-      ?.declarations.filter(d => d !== node).flatMap(d => d.names) ?? [];
-    const localNames = AstUtils.getContainerOfType(node, isFunc)
-      ?.declarations.filter(d => d !== node).flatMap(d => d.names) ?? [];
+    const topLevelNames =
+      AstUtils.getContainerOfType(node, isProgram)
+        ?.declarations.filter((d) => d !== node)
+        .flatMap((d) => d.names) ?? [];
+    const localNames =
+      AstUtils.getContainerOfType(node, isFunc)
+        ?.declarations.filter((d) => d !== node)
+        .flatMap((d) => d.names) ?? [];
 
-    const { hasDup } = node.names.reduce((acc, name, idx) => {
-      if (acc.seen.has(name)) acc.hasDup = idx;
-      else acc.seen.add(name);
-      return acc;
-    }, { seen: new Set(), hasDup: -1 });
+    const { hasDup } = node.names.reduce(
+      (acc, name, idx) => {
+        if (acc.seen.has(name)) acc.hasDup = idx;
+        else acc.seen.add(name);
+        return acc;
+      },
+      { seen: new Set(), hasDup: -1 }
+    );
 
     if (hasDup >= 0) {
       accept('error', 'Identifier is already declared here', {
-        node, property: 'names', index: hasDup
+        node,
+        property: 'names',
+        index: hasDup,
       });
     }
 
     const forbidden = new Set([...topLevelNames, ...localNames]);
     node.names.forEach((name, i) => {
       if (forbidden.has(name)) {
-        accept('error',
-          `Identifier '${name}' is already declared`,
-          { node, property: 'names', index: i }
-        );
+        accept('error', `Identifier '${name}' is already declared`, {
+          node,
+          property: 'names',
+          index: i,
+        });
       }
     });
   }
 
   checkObservationCondition(node: Observation, accept: ValidationAcceptor) {
-    
     const map = this.getTypeCache();
-    const conditionType = inferType(node.condition, map)
+    const conditionType = inferType(node.condition, map);
     if (!isBooleanType(conditionType)) {
       accept('error', 'Only boolean expressions can be observed', {
         node,
-        property: 'condition'
+        property: 'condition',
       });
     }
   }

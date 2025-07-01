@@ -1,95 +1,98 @@
 {
-    "name": "mini-prob",
-    "description": "Please enter a brief description here",
-    "version": "0.0.1",
-    "files": [
-        "bin",
-        "out",
-        "src"
-    ],
-    "type": "module",
-    "scripts": {
-        "build": "tsc -b tsconfig.src.json && node esbuild.mjs",
-        "watch": "concurrently -n tsc,esbuild -c blue,yellow \"tsc -b tsconfig.src.json --watch\" \"node esbuild.mjs --watch\"",
-        "lint": "eslint src --ext ts",
-        "langium:generate": "langium generate",
-        "langium:generate:production": "langium generate --mode=production",
-        "langium:watch": "langium generate --watch",
-        "vscode:prepublish": "npm run build && npm run lint",
-        "build:web": "npm run build",
-        "bundle": "vite build",
-        "bundle:serve": "http-server ./dist --port 5175",
-        "dev": "vite",
-        "dev:debug": "vite --debug --force",
-        "serve": "npm run dev",
-        "test": "vitest run",
-        "gen-build": "npm run langium:generate && npm run build && node ./syntaxes/patchTextMate.js",
-        "production": "npm run langium:generate:production"
-    },
-    "dependencies": {
-        "@codingame/monaco-vscode-editor-service-override": "~3.2.3",
-        "@codingame/monaco-vscode-keybindings-service-override": "~3.2.3",
-        "chalk": "~5.3.0",
-        "commander": "~11.0.0",
-        "langium": "~3.4.0",
-        "monaco-editor": "npm:@codingame/monaco-vscode-editor-api@~3.2.3",
-        "monaco-editor-wrapper": "~4.0.2",
-        "monaco-languageclient": "~8.1.1",
-        "vscode-languageclient": "~9.0.1",
-        "vscode-languageserver": "~9.0.1"
-    },
-    "devDependencies": {
-        "@codingame/esbuild-import-meta-url-plugin": "~1.0.2",
-        "@types/node": "^18.0.0",
-        "@types/vscode": "~1.67.0",
-        "concurrently": "~8.2.1",
-        "esbuild": "~0.20.2",
-        "http-server": "~14.1.1",
-        "langium-cli": "~3.4.0",
-        "typescript": "~5.1.6",
-        "vite": "~5.2.7",
-        "vitest": "^1.6.1",
-        "vsce": "^2.15.0"
-    },
-    "volta": {
-        "node": "18.19.1",
-        "npm": "10.2.4"
-    },
-    "displayName": "MiniProb",
-    "engines": {
-        "vscode": "^1.67.0",
-        "node": ">=18.0.0"
-    },
-    "categories": [
-        "Programming Languages"
-    ],
-    "contributes": {
-        "languages": [
-            {
-                "id": "mini-prob",
-                "aliases": [
-                    "Mini Prob",
-                    "mini-prob"
-                ],
-                "extensions": [
-                    ".pomc"
-                ],
-                "configuration": "./language-configuration.json"
-            }
+  "name": "mini-prob",
+  "description": "Please enter a brief description here",
+  "version": "0.0.1",
+  "files": [
+    "bin",
+    "out",
+    "src"
+  ],
+  "type": "module",
+  "scripts": {
+    "build": "tsc -b tsconfig.src.json && node esbuild.mjs",
+    "watch": "concurrently -n tsc,esbuild -c blue,yellow \"tsc -b tsconfig.src.json --watch\" \"node esbuild.mjs --watch\"",
+    "lint": "eslint src --ext ts",
+    "langium:generate": "langium generate",
+    "langium:generate:production": "langium generate --mode=production",
+    "langium:watch": "langium generate --watch",
+    "vscode:prepublish": "npm run build && npm run lint",
+    "build:web": "npm run build",
+    "bundle": "vite build",
+    "bundle:serve": "http-server ./dist --port 5175",
+    "dev": "vite",
+    "dev:debug": "vite --debug --force",
+    "serve": "npm run dev",
+    "test": "vitest run",
+    "gen-build": "npm run langium:generate && npm run build && node ./syntaxes/patchTextMate.js",
+    "production": "npm run langium:generate:production",
+    "format": "prettier --write \"**/*.{js,ts,tsx,json,md,css,html}\"",
+    "format:check": "prettier --check \"**/*.{js,ts,tsx,json,md,css,html}\""
+  },
+  "dependencies": {
+    "@codingame/monaco-vscode-editor-service-override": "~3.2.3",
+    "@codingame/monaco-vscode-keybindings-service-override": "~3.2.3",
+    "chalk": "~5.3.0",
+    "commander": "~11.0.0",
+    "langium": "~3.4.0",
+    "monaco-editor": "npm:@codingame/monaco-vscode-editor-api@~3.2.3",
+    "monaco-languageclient": "~8.1.1",
+    "neostandard": "^0.12.1",
+    "vscode-languageclient": "~9.0.1",
+    "vscode-languageserver": "~9.0.1"
+  },
+  "devDependencies": {
+    "@codingame/esbuild-import-meta-url-plugin": "~1.0.2",
+    "@types/node": "^18.0.0",
+    "@types/vscode": "~1.67.0",
+    "concurrently": "~8.2.1",
+    "eslint": "^9.30.0",
+    "http-server": "~14.1.1",
+    "langium-cli": "~3.4.0",
+    "prettier": "^3.6.2",
+    "typescript": "~5.1.6",
+    "vitest": "^1.6.1",
+    "vsce": "^2.15.0"
+  },
+  "volta": {
+    "node": "18.19.1",
+    "npm": "10.2.4"
+  },
+  "displayName": "MiniProb",
+  "engines": {
+    "vscode": "^1.67.0",
+    "node": ">=18.0.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "mini-prob",
+        "aliases": [
+          "Mini Prob",
+          "mini-prob"
         ],
-        "grammars": [
-            {
-                "language": "mini-prob",
-                "scopeName": "source.mini-prob",
-                "path": "syntaxes/mini-prob.tmLanguage.json"
-            }
-        ]
-    },
-    "activationEvents": [
-        "onLanguage:mini-prob"
+        "extensions": [
+          ".pomc"
+        ],
+        "configuration": "./language-configuration.json"
+      }
     ],
-    "main": "./out/extension/main.cjs",
-    "bin": {
-        "mini-prob-cli": "./bin/cli.js"
-    }
+    "grammars": [
+      {
+        "language": "mini-prob",
+        "scopeName": "source.mini-prob",
+        "path": "syntaxes/mini-prob.tmLanguage.json"
+      }
+    ]
+  },
+  "activationEvents": [
+    "onLanguage:mini-prob"
+  ],
+  "main": "./out/extension/main",
+  "bin": {
+    "mini-prob-cli": "./bin/cli.js"
+  },
+  "repository": "https://github.com/e12224207/bachelorthesis"
 }
