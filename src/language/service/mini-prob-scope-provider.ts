@@ -12,6 +12,7 @@ import {
   Stream,
   stream,
   AstNode,
+  DocumentCache,
 } from 'langium';
 import {
   Decl,
@@ -23,18 +24,17 @@ import {
   isProgram
 } from '../generated/ast.js';
 import { dirname, posix } from 'path';
-import { SharedMiniProbCache } from './mini-prob-caching.js';
 import { MiniProbServices } from '../mini-prob-module.js';
 // ScopeOptions AstNodeDescription
 
 export class MiniProbScopeProvider extends DefaultScopeProvider {
   private astNodeDescriptionProvider: AstNodeDescriptionProvider;
-  private readonly descriptionCache: SharedMiniProbCache;
+  private readonly descriptionCache: DocumentCache<string, Scope>;
   constructor(services: MiniProbServices) {
     super(services);
     //get some helper services
     this.astNodeDescriptionProvider = services.workspace.AstNodeDescriptionProvider;
-    this.descriptionCache = services.caching.MiniProbCache;
+    this.descriptionCache = new DocumentCache(services.shared);
   }
   override getScope(context: ReferenceInfo): Scope {
     const container = context.container;

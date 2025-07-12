@@ -21,9 +21,9 @@ import {
   IntegerLiteral,
   Query,
   Observation,
+  Program,
 } from '../generated/ast.js';
 import type { MiniProbServices } from '../mini-prob-module.js';
-import { SharedMiniProbCache } from './mini-prob-caching.js';
 import {
   IntegerTypeDescription,
   isBooleanType,
@@ -57,6 +57,7 @@ export function registerValidationChecks(services: MiniProbServices) {
     BinaryExpression: validator.checkBinaryExpressions,
     LogicalNegation: validator.checkUnaryExpressions,
     IntegerLiteral: validator.checkIntegerLiteral,
+    Program: validator.checkMainOccurrences
   };
   registry.register(checks, validator);
 }
@@ -66,17 +67,14 @@ export function registerValidationChecks(services: MiniProbServices) {
  * Uses a shared cache to avoid recomputing type descriptions.
  */
 export class MiniProbValidator {
-  /** Shared cache for storing type descriptions across validations. */
-  private readonly descriptionCache: SharedMiniProbCache;
 
   /**
    * Initialize the validator with language services.
    *
    * @param services   The MiniProbServices, providing caching and other helpers.
    */
-  constructor(services: MiniProbServices) {
-    this.descriptionCache = services.caching.MiniProbCache;
-  }
+  // eslint-disable-next-line
+  constructor(services: MiniProbServices) {/*grab specific services here*/}
 
   /**
    * Ensure that any array‐style L-value index is an integer.
@@ -247,15 +245,39 @@ export class MiniProbValidator {
     }
 
     const functionNames = AstUtils.getContainerOfType(node, isProgram)!
-      .functions.filter((f) => f !== node)
+      .functions.filter((f) => f !== node) //filter out own-self
       .map((f) => f.name);
 
     if (functionNames.includes(node.name)) {
-      accept('error', `Function with name ${node.name} already exists`, {
+      accept('error', `Function with name ${node.name} already exists.`, {
         node,
         property: 'name',
       });
     }
+  }
+
+  /**
+   * Locate a main nad only one main function definition
+   * 
+   * - main() must exist only once
+   *
+   * @param node      The Func AST node.
+   * @param accept    Callback to emit validation messages.
+   */
+  checkMainOccurrences(node: Program, accept: ValidationAcceptor) {
+     const functionNames = node.functions.filter(f => f.name === "main").map((f) => f.name);
+     if (functionNames.length <= 0) {
+      accept("error", 'Each program needs a \'main()\' function.', {
+        node,
+        property: "functions"
+      });
+     }
+     if (functionNames.length > 1) {
+      accept("error", 'Each program must only contain a single \'main\' function.', {
+        node,
+        property: "functions"
+      });
+     }
   }
 
   /**

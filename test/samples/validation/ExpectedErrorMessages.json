@@ -203,77 +203,80 @@
     "46": [
       "Expecting token of type '(' but found `=`.",
       "Expecting token of type 'EOF' but found `=`.",
-      "Function with name globalB already exists"
+      "Function with name globalB already exists."
     ],
     "47": [
       "Expecting token of type '(' but found `=`.",
       "Expecting token of type 'EOF' but found `=`.",
-      "Function with name globalB already exists"
+      "Function with name globalB already exists."
     ]
   },
   "literalAndUnaryValidation.pomc": {
-    "24": [
+    "27": [
       "Value 2 does not fit into integer with width 1"
     ],
-    "25": [
+    "28": [
       "Negatives value cannot be stored in unsigned integer"
     ],
-    "26": [
+    "29": [
       "Expecting token of type 'INT' but found `;`.",
       "Incomplete integer literal"
     ],
-    "27": [
+    "30": [
       "Expecting token of type 'INT' but found `;`.",
       "Incomplete integer literal"
     ],
-    "28": [
+    "31": [
       "Expecting token of type 'INT' but found `u8`.",
       "Incomplete integer literal",
       "No spaces are allowed in integer literals"
     ],
-    "29": [
+    "32": [
       "Expecting token of type 'INT_PREFIX' but found `;`.",
       "Incomplete integer literal"
     ],
-    "30": [
+    "33": [
       "Expecting token of type ';' but found `22323232323232`.",
       "Type unsigned integer123232323 is not assignable to unsigned integer8."
     ],
-    "31": [
+    "34": [
       "The wisth of integers can only be up to (2^29)-1"
     ],
-    "32": [
+    "35": [
       "No spaces are allowed in integer literals"
     ],
-    "33": [
+    "36": [
       "No spaces are allowed in integer literals"
     ],
-    "53": [
+    "37": [
+      "Type unsigned integer8 is not assignable to signed integer8."
+    ],
+    "57": [
       "The operation '!' is not possible on type 'unsigned integer4'"
     ],
-    "54": [
-      "Value 4 does not fit into integer with width 2"
-    ],
-    "55": [
-      "Type boolean is not assignable to unsigned integer8."
-    ],
-    "56": [
-      "Type boolean is not assignable to unsigned integer8.",
+    "58": [
       "Value 4 does not fit into integer with width 2"
     ],
     "59": [
       "Type boolean is not assignable to unsigned integer8."
     ],
     "60": [
-      "Type boolean is not assignable to unsigned integer8."
+      "Type boolean is not assignable to unsigned integer8.",
+      "Value 4 does not fit into integer with width 2"
     ],
     "61": [
-      "The operation '!' is not possible on type 'unsigned integer8'"
+      "Type boolean is not assignable to unsigned integer8."
     ],
     "62": [
-      "The operation '!' is not possible on type 'unsigned integer5'"
+      "Type boolean is not assignable to unsigned integer8."
     ],
     "63": [
+      "The operation '!' is not possible on type 'unsigned integer8'"
+    ],
+    "64": [
+      "The operation '!' is not possible on type 'unsigned integer5'"
+    ],
+    "65": [
       "The operation '!' is not possible on type 'unsigned integer8'"
     ]
   },
@@ -306,17 +309,17 @@
     "54": [
       "Expecting token of type '(' but found `=`.",
       "Expecting token of type 'EOF' but found `=`.",
-      "Function with name localBool already exists"
+      "Function with name localBool already exists."
     ],
     "55": [
       "Expecting token of type '(' but found `=`.",
       "Expecting token of type 'EOF' but found `=`.",
-      "Function with name localBool already exists"
+      "Function with name localBool already exists."
     ],
     "56": [
       "Expecting token of type '(' but found `=`.",
       "Expecting token of type 'EOF' but found `=`.",
-      "Function with name localBool already exists"
+      "Function with name localBool already exists."
     ]
   }
 }
