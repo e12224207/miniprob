@@ -120,11 +120,18 @@ function inferBinaryExpression(
         return createErrorType('Division by 0 not possible', expr);
       }
 
-      const biggerWidth =
+      var resultingWidth = 0;
+      if (expr.operator === '%') {
+        resultingWidth = (left.signed ? left.width - 1 : left.width) <= (right.signed ? right.width - 1 : right.width)
+          ? left.width
+          : right.width;
+      } else {
+        resultingWidth =
         (left.signed ? left.width - 1 : left.width) > (right.signed ? right.width - 1 : right.width)
           ? left.width
           : right.width;
-      return createIntegerType(biggerWidth, left.signed || right.signed);
+      }      
+      return createIntegerType(resultingWidth, left.signed || right.signed);
     } else {
       return createErrorType('Could not infer type due to inadequate members.', expr);
     }

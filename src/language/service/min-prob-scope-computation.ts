@@ -6,6 +6,7 @@ import { Program } from '../generated/ast.js';
 
 export class MiniProbScopeComputation extends DefaultScopeComputation {
   override async computeExports(document: LangiumDocument<AstNode>): Promise<AstNodeDescription[]> {
+    //compute default exports (functions)
     const exports = await super.computeExports(document);
 
     const program = document.parseResult.value as Program;
