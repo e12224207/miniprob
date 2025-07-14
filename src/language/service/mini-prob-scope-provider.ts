@@ -63,16 +63,16 @@ export class MiniProbScopeProvider extends DefaultScopeProvider {
         //const ghostFunc = AstUtils.getContainerOfType(container, isFunc); //isFunc this gets me the ghost reference node
         //You’re running into the “ghost” functions because Langium’s default scope provider will happily invent a placeholder Func for every unresolved identifier—so when you do
 
-        //include declarations from first unclosed function, generally the one in which ipnut is happening.
-        var enclosingFunc = programFunctions.find((func) => {
+        //include declarations from first unclosed function(missing '}'), generally the one in which input is happening(quality of live).
+        var enclosingUnfinishedFunc = programFunctions.find((func) => {
           const text = func.$cstNode?.text ?? '';
           const opens = (text.match(/{/g) || []).length;
           const closes = (text.match(/}/g) || []).length;
           return closes < opens;
         });
         var localDeclarationsDescriptions: AstNodeDescription[] = [];
-        if (enclosingFunc) {
-          localDeclarationsDescriptions = enclosingFunc.declarations.flatMap((decl) =>
+        if (enclosingUnfinishedFunc) {
+          localDeclarationsDescriptions = enclosingUnfinishedFunc.declarations.flatMap((decl) =>
             decl.names.map((n) => this.astNodeDescriptionProvider.createDescription(decl, n))
           );
         }
@@ -131,7 +131,7 @@ export class MiniProbScopeProvider extends DefaultScopeProvider {
           }
           return new MapScope(stream(descriptions, localDescriptions, importedDescriptions));
         } else {
-          // usage of args and lval outside of functions currently not allowed by grammar
+          // usage of Lval(assignments or epxressions) outside of functions: currently not possible by the grammar
           const programDeclarations = program.declarations || [];
           const descriptions = this.descriptionCache
             .get(
@@ -190,6 +190,7 @@ export class MiniProbScopeProvider extends DefaultScopeProvider {
 
   //helper functions
   private isRealFunc(node: AstNode | undefined): node is Func {
+    console.log((node as Func).body)
     return isFunc(node) && (node as Func).body !== undefined;
   }
 }
