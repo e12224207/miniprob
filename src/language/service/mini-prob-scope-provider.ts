@@ -190,7 +190,6 @@ export class MiniProbScopeProvider extends DefaultScopeProvider {
 
   //helper functions
   private isRealFunc(node: AstNode | undefined): node is Func {
-    console.log((node as Func).body)
     return isFunc(node) && (node as Func).body !== undefined;
   }
 }

@@ -49,7 +49,7 @@ succeedingBinary() {
     localBool   = (5u8 + 3u8) == 8u8 && (2s8 * 2s8) == 4s8;
     localBool   = (11u8 % 2u8) < 2u8 || (true && false);
     //min width for modulo
-    globalSint = 5u8 % 6s9
+    globalSint = 5u8 % 6s9;
 }
 
 // ————————————————————————————————————————————————
