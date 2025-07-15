@@ -5,7 +5,8 @@
   "files": [
     "bin",
     "out",
-    "src"
+    "src",
+    "syntaxes"
   ],
   "type": "module",
   "scripts": {
