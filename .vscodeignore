@@ -1,5 +1,6 @@
 .vscode-test/**
 .gitignore
+node_modules
 langium-quickstart.md
 # ignore editor and Git metadata
 .vscode/**
@@ -23,13 +24,12 @@ test/**
 
 # ignore documentation, CI configs, lockfiles, logs
 docs/**
-README.*         ← (you might keep README.md if you want it bundled)
 CHANGELOG.md
-LICENSE         ← (you’ll usually keep this too)
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
 npm-debug.log
 yarn-error.log
 
+miniprob-grammar.bnf
 # everything else falls through—out/, syntaxes/, language-configuration.json, package.json, etc., will be included
