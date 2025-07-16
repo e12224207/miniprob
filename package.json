@@ -1,12 +1,11 @@
 {
   "name": "mini-prob",
-  "description": "Please enter a brief description here",
-  "version": "0.0.7",
+  "description": "This extension is a language support for developers using MIniProb, a PPL which can be model checked.",
+  "version": "0.0.8",
   "files": [
     "bin",
     "out",
-    "src",
-    "syntaxes"
+    "src"
   ],
   "type": "module",
   "scripts": {

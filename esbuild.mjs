@@ -1,54 +1,71 @@
 //@ts-check
 import * as esbuild from 'esbuild';
+import { writeFileSync } from 'fs';
+import { join } from 'path';
 
 const watch = process.argv.includes('--watch');
 const minify = process.argv.includes('--minify');
 
-const success = watch ? 'Watch build succeeded' : 'Build succeeded';
-
-function getTime() {
-    const date = new Date();
-    return `[${`${padZeroes(date.getHours())}:${padZeroes(date.getMinutes())}:${padZeroes(date.getSeconds())}`}] `;
-}
-
 function padZeroes(i) {
-    return i.toString().padStart(2, '0');
+  return i.toString().padStart(2, '0');
 }
-
+function getTime() {
+  const d = new Date();
+  return `[${padZeroes(d.getHours())}:${padZeroes(d.getMinutes())}:${padZeroes(d.getSeconds())}] `;
+}
 const plugins = [{
-    name: 'watch-plugin',
-    setup(build) {
-        build.onEnd(result => {
-            if (result.errors.length === 0) {
-                console.log(getTime() + success);
-            }
-        });
-    },
+  name: 'watch-plugin',
+  setup(build) {
+    build.onEnd(result => {
+      if (result.errors.length === 0) {
+        console.log(
+          getTime() +
+          (watch ? 'Watch build succeeded' : 'Build succeeded') +
+          (minify ? ' (minified)' : '')
+        );
+      }
+    });
+  }
 }];
 
 const ctx = await esbuild.context({
-    // Entry points for the vscode extension and the language server
-    entryPoints: ['src/extension/main.ts', 'src/language/main.ts'],
-    outdir: 'out',
-    bundle: true,
-    target: "ES2017",
-    // VSCode's extension host is still using cjs, so we need to transform the code
-    format: 'cjs',
-    // To prevent confusing node, we explicitly use the `.cjs` extension
-    outExtension: {
-        '.js': '.cjs'
-    },
-    loader: { '.ts': 'ts' },
-    external: ['vscode'],
-    platform: 'node',
-    sourcemap: !minify,
-    minify,
-    plugins
+  entryPoints: {
+    'extension/main': 'src/extension/main.ts',
+    'language/main': 'src/language/main.ts'
+  },
+
+  bundle: true,
+  outdir: 'out',
+
+  // Produce CommonJS for Node (VS Code)
+  platform: 'node',
+  format: 'cjs',
+  target: 'ES2017',
+
+  external: ['vscode'],
+  loader: { '.ts': 'ts' },
+  outExtension: { '.js': '.js' },
+  // Source maps only when not minifying
+  sourcemap: !minify,
+  minify,
+  plugins
 });
 
 if (watch) {
-    await ctx.watch();
+  await ctx.watch();
 } else {
-    await ctx.rebuild();
-    ctx.dispose();
+  await ctx.rebuild();
+
+  const pkgDir = join(process.cwd(), 'out', 'extension');
+  writeFileSync(
+    join(pkgDir, 'package.json'),
+    JSON.stringify({ type: 'commonjs' }, null, 2)
+  );
+  const langPkgDir = join(process.cwd(), 'out', 'language');
+  writeFileSync(
+    join(langPkgDir, 'package.json'),
+    JSON.stringify({ type: 'commonjs' }, null, 2)
+  );
+
+  ctx.dispose();
 }
